@@ -2,12 +2,111 @@
 
 import pybullet as p
 import time
+import numpy as np
+import math
 
 try:
     from .robots import KukaIIWA7
 except (ImportError, SystemError):
     from robots import KukaIIWA7
 
+def drawInertiaBox(parentUid, parentLinkIndex, color):
+  dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
+  mass = dyn[0]
+  frictionCoeff = dyn[1]
+  inertia = dyn[2]
+  if (mass > 0):
+    Ixx = inertia[0]
+    Iyy = inertia[1]
+    Izz = inertia[2]
+    boxScaleX = 0.5 * math.sqrt(6 * (Izz + Iyy - Ixx) / mass)
+    boxScaleY = 0.5 * math.sqrt(6 * (Izz + Ixx - Iyy) / mass)
+    boxScaleZ = 0.5 * math.sqrt(6 * (Ixx + Iyy - Izz) / mass)
+
+    halfExtents = [boxScaleX, boxScaleY, boxScaleZ]
+    pts = [[halfExtents[0], halfExtents[1], halfExtents[2]],
+           [-halfExtents[0], halfExtents[1], halfExtents[2]],
+           [halfExtents[0], -halfExtents[1], halfExtents[2]],
+           [-halfExtents[0], -halfExtents[1], halfExtents[2]],
+           [halfExtents[0], halfExtents[1], -halfExtents[2]],
+           [-halfExtents[0], halfExtents[1], -halfExtents[2]],
+           [halfExtents[0], -halfExtents[1], -halfExtents[2]],
+           [-halfExtents[0], -halfExtents[1], -halfExtents[2]]]
+
+    p.addUserDebugLine(pts[0],
+                       pts[1],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[1],
+                       pts[3],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[3],
+                       pts[2],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[2],
+                       pts[0],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+
+    p.addUserDebugLine(pts[0],
+                       pts[4],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[1],
+                       pts[5],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[2],
+                       pts[6],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[3],
+                       pts[7],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+
+    p.addUserDebugLine(pts[4 + 0],
+                       pts[4 + 1],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[4 + 1],
+                       pts[4 + 3],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[4 + 3],
+                       pts[4 + 2],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
+    p.addUserDebugLine(pts[4 + 2],
+                       pts[4 + 0],
+                       color,
+                       1,
+                       parentObjectUniqueId=parentUid,
+                       parentLinkIndex=parentLinkIndex)
 
 # Can alternatively pass in p.DIRECT
 client = p.connect(p.GUI)
@@ -18,6 +117,7 @@ p.setGravity(0, 0, -9.81, physicsClientId=client)
 # p.setAdditionalSearchPath('/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data')
 
 import pybullet_data
+print("pybullet_data.getDataPath() = " + str(pybullet_data.getDataPath()))
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 planeId = p.loadURDF("plane.urdf")
@@ -116,12 +216,21 @@ motorIndices = []
 
 
 # GUI Debug Input
-dv = 0.6
-dp_posX = p.addUserDebugParameter("posX", -dv, dv, 0)
-dp_posY = p.addUserDebugParameter("posY", -dv, dv, 0)
-dp_posZ = p.addUserDebugParameter("posZ", -dv, dv, 0)
-dp_yaw = p.addUserDebugParameter("yaw", -dv, dv, 0)
-dp_fingerAngle = p.addUserDebugParameter("fingerAngle", 0, 0.3, .3)
+# dv = 0.6
+# dp_posX = p.addUserDebugParameter("posX", -dv, dv, 0)
+# dp_posY = p.addUserDebugParameter("posY", -dv, dv, 0)
+# dp_posZ = p.addUserDebugParameter("posZ", -dv, dv, 0)
+# dp_yaw = p.addUserDebugParameter("yaw", -dv, dv, 0)
+# dp_fingerAngle = p.addUserDebugParameter("fingerAngle", 0, 0.3, .3)
+
+dv = 2.0
+dp_joint_pos_0 = p.addUserDebugParameter("j0", -dv, dv, 0)
+dp_joint_pos_1 = p.addUserDebugParameter("j1", -dv, dv, 0)
+dp_joint_pos_2 = p.addUserDebugParameter("j2", -dv, dv, 0)
+dp_joint_pos_3 = p.addUserDebugParameter("j3", -dv, dv, 0)
+dp_joint_pos_4 = p.addUserDebugParameter("j4", -dv, dv, 0)
+dp_joint_pos_5 = p.addUserDebugParameter("j5", -dv, dv, 0)
+dp_joint_pos_6 = p.addUserDebugParameter("j6", -dv, dv, 0)
 
 # Because an SDF is assumed to hold multiple objects
 # objects = p.loadSDF("gripper/wsg50_one_motor_gripper_new_free_base.sdf")
@@ -155,21 +264,101 @@ dp_fingerAngle = p.addUserDebugParameter("fingerAngle", 0, 0.3, .3)
 # p.addUserDebugLine([0, 0, 0], [0, 0, 0.1], [0, 0, 1], parentObjectUniqueId=arm, parentLinkIndex=6)
 p.setRealTimeSimulation(0)
 
-# p.setJointMotorControlArray(bodyUniqueId=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,1.2,0,1.2,0,0,0],positionGains=[500,500,500,500,500,500,500],velocityGains=[100,100,100,100,100,100,100])
+# p.setJointMotorControlArray(arm.getUUid()=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,1.2,0,1.2,0,0,0],positionGains=[500,500,500,500,500,500,500],velocityGains=[100,100,100,100,100,100,100])
+arm.setControlMode("JOINT_TORQUE_CONTROL")
 while 1:
-    posX = p.readUserDebugParameter(dp_posX)
-    posY = p.readUserDebugParameter(dp_posY)
-    posZ = p.readUserDebugParameter(dp_posZ)
-    yaw = p.readUserDebugParameter(dp_yaw)
-    fingerAngle = p.readUserDebugParameter(dp_fingerAngle)
+    # drawInertiaBox(arm.getUUid(), -1, [1, 0, 0])
+    # posX = p.readUserDebugParameter(dp_posX)
+    # posY = p.readUserDebugParameter(dp_posY)
+    # posZ = p.readUserDebugParameter(dp_posZ)
+    # yaw = p.readUserDebugParameter(dp_yaw)
+    # fingerAngle = p.readUserDebugParameter(dp_fingerAngle)
+    # for i in range(7):
+    #     drawInertiaBox(arm.getUUid(), i, [0, 1, 0])
+
+    numJoints = len(arm.getMotorIndices())
+    # p.getNumJoints(arm.getUUid())
+    jointStates = p.getJointStates(arm.getUUid(), arm.getMotorIndices())
+    q1 = []
+    qdot1 = []
+    zeroAccelerations = []
+    for i in range(numJoints):
+        print('i ' + str(i))
+        print('index ' + str(arm.getMotorIndices()[i]))
+        q1.append(jointStates[i][0])
+        qdot1.append(jointStates[i][1])
+        zeroAccelerations.append(0)
+    q = np.array(q1)
+    qdot = np.array(qdot1)
+    print("len qdot " + str(len(qdot)))
+    qdes = np.array([0.2,0.3,-0.1,0.0,0.0,0.0,0.0])
+    print("len qdes " + str(len(qdes)))
+    qdotdes = np.array([0,0,0,0,0,0,0])
+    print("len qdotdes " + str(len(qdotdes)))
+    qError = qdes - q
+    print("len qError " + str(len(qError)))
+    qdotError = qdotdes - qdot
+    print("len qdotError " + str(len(qdotError)))
+    Kp = np.diagflat([100,100,100,100,100,100,100])
+    print("Kp " + str(Kp))
+    Kd = np.diagflat([10,10,10,10,10,10,10])
+    pp = Kp.dot(qError)
+    dd = Kd.dot(qdotError)
+    # forces = pp + dd
+
+    timeStep = 1.0
+
+    M1 = p.calculateMassMatrix(arm.getUUid(), q1)
+    M2 = np.array(M1)
+    M = (M2 + Kd * timeStep)
+    c1 = p.calculateInverseDynamics(arm.getUUid(), q1, qdot1, zeroAccelerations)
+    c = np.array(c1)
+    b = -c + pp + dd
+    qddot = np.linalg.solve(M, b)
+    tau = pp + dd - Kd.dot(qddot) * timeStep
+    tau = c
+    # maxF = np.array(1000.0)
+    # forces = np.clip(tau, -maxF, maxF)
+
+    joint_pos_0 = p.readUserDebugParameter(dp_joint_pos_0)
+    joint_pos_1 = p.readUserDebugParameter(dp_joint_pos_1)
+    joint_pos_2 = p.readUserDebugParameter(dp_joint_pos_2)
+    joint_pos_3 = p.readUserDebugParameter(dp_joint_pos_3)
+    joint_pos_4 = p.readUserDebugParameter(dp_joint_pos_4)
+    joint_pos_5 = p.readUserDebugParameter(dp_joint_pos_5)
+    joint_pos_6 = p.readUserDebugParameter(dp_joint_pos_6)
+
+    # q_des = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
+
+    # # arm.getInertiaMatrix()
+
+    # obs = arm.getObservation()
+    # q = []
+    # qd = []
+    # for i in range(len(obs)):
+    #     q.append(obs[i][0])
+    #     qd.append(obs[i][1])
+    # q = np.array(q)
+    # qd = np.array(qd)
+
+    # kp = 10.0
+    # kd = 0.5
+
+    # cmd = kp * (q_des - q) - kd * qd
+
+    cmd = tau
+
+    arm.setCommand(cmd)
+
     # TODO REALTIME ? How to do this? PD Controller Example?
     # time.sleep(0.01)
-    # p.setJointMotorControlArray(bodyUniqueId=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,0,0,0,0,0,0])
+    # p.setJointMotorControlArray(arm.getUUid()=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,0,0,0,0,0,0])
     p.stepSimulation()
+    
     # pass
 
 # # Torque control
-# https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=12644
+# https://pybullet.org/Bullet/phpB3/viewtopic.php?t=12644
 # pybullet.setJointMotorControl2(objUid, linkIndex, p.VELOCITY_CONTROL, force=0)
 
 # # Disable the motors first

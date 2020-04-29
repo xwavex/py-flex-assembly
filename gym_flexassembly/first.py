@@ -365,8 +365,8 @@ while 1:
     # # JOINT PD
     desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
     desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-    kps = [400,400,400,400,400,400,400]
-    kds = [100,100,100,100,100,100,100]
+    kps = [600,600,600,600,600,600,600]
+    kds = [200,200,200,200,200,200,200]
     # kps = [0.1,0.1,0.1,0.1,0.1,0.1,0.1]
     # kds = [0.05,0.05,0.05,0.05,0.05,0.05,0.05]
     maxForces = 10000000

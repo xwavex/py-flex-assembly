@@ -44,9 +44,10 @@ class KukaIIWA:
 
     def reset(self):
         if self.variant == '14':
-            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "kuka-iiwa-7/model.urdf"),flags=p.URDF_USE_INERTIA_FROM_FILE)
+            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "kuka-iiwa-7/model.urdf"), useFixedBase=True)
+            # flags=p.URDF_USE_INERTIA_FROM_FILE
         else:
-            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "kuka-iiwa-7/model.urdf"),flags=p.URDF_USE_INERTIA_FROM_FILE)
+            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "kuka-iiwa-7/model.urdf"), useFixedBase=True)
         self.controlMode = "JOINT_TORQUE_CONTROL"
         # self.kukaUid = objects[0]
         #for i in range (p.getNumJoints(self.kukaUid)):

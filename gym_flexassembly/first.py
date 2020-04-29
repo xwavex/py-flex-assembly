@@ -10,6 +10,11 @@ try:
 except (ImportError, SystemError):
     from robots import KukaIIWA7
 
+try:
+    from .controller import JointGravityCompensationController, JointPDController
+except (ImportError, SystemError):
+    from controller import JointGravityCompensationController, JointPDController
+
 def drawInertiaBox(parentUid, parentLinkIndex, color):
   dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
   mass = dyn[0]
@@ -264,62 +269,13 @@ dp_joint_pos_6 = p.addUserDebugParameter("j6", -dv, dv, 0)
 # p.addUserDebugLine([0, 0, 0], [0, 0, 0.1], [0, 0, 1], parentObjectUniqueId=arm, parentLinkIndex=6)
 p.setRealTimeSimulation(0)
 
+ctrl = JointGravityCompensationController(p)
+ctrl_j_pd = JointPDController(p)
+
 # p.setJointMotorControlArray(arm.getUUid()=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,1.2,0,1.2,0,0,0],positionGains=[500,500,500,500,500,500,500],velocityGains=[100,100,100,100,100,100,100])
 arm.setControlMode("JOINT_TORQUE_CONTROL")
+p.setTimeStep(0.001) # TODO DLW
 while 1:
-    # drawInertiaBox(arm.getUUid(), -1, [1, 0, 0])
-    # posX = p.readUserDebugParameter(dp_posX)
-    # posY = p.readUserDebugParameter(dp_posY)
-    # posZ = p.readUserDebugParameter(dp_posZ)
-    # yaw = p.readUserDebugParameter(dp_yaw)
-    # fingerAngle = p.readUserDebugParameter(dp_fingerAngle)
-    # for i in range(7):
-    #     drawInertiaBox(arm.getUUid(), i, [0, 1, 0])
-
-    numJoints = len(arm.getMotorIndices())
-    # p.getNumJoints(arm.getUUid())
-    jointStates = p.getJointStates(arm.getUUid(), arm.getMotorIndices())
-    q1 = []
-    qdot1 = []
-    zeroAccelerations = []
-    for i in range(numJoints):
-        print('i ' + str(i))
-        print('index ' + str(arm.getMotorIndices()[i]))
-        q1.append(jointStates[i][0])
-        qdot1.append(jointStates[i][1])
-        zeroAccelerations.append(0)
-    q = np.array(q1)
-    qdot = np.array(qdot1)
-    print("len qdot " + str(len(qdot)))
-    qdes = np.array([0.2,0.3,-0.1,0.0,0.0,0.0,0.0])
-    print("len qdes " + str(len(qdes)))
-    qdotdes = np.array([0,0,0,0,0,0,0])
-    print("len qdotdes " + str(len(qdotdes)))
-    qError = qdes - q
-    print("len qError " + str(len(qError)))
-    qdotError = qdotdes - qdot
-    print("len qdotError " + str(len(qdotError)))
-    Kp = np.diagflat([100,100,100,100,100,100,100])
-    print("Kp " + str(Kp))
-    Kd = np.diagflat([10,10,10,10,10,10,10])
-    pp = Kp.dot(qError)
-    dd = Kd.dot(qdotError)
-    # forces = pp + dd
-
-    timeStep = 1.0
-
-    M1 = p.calculateMassMatrix(arm.getUUid(), q1)
-    M2 = np.array(M1)
-    M = (M2 + Kd * timeStep)
-    c1 = p.calculateInverseDynamics(arm.getUUid(), q1, qdot1, zeroAccelerations)
-    c = np.array(c1)
-    b = -c + pp + dd
-    qddot = np.linalg.solve(M, b)
-    tau = pp + dd - Kd.dot(qddot) * timeStep
-    tau = c
-    # maxF = np.array(1000.0)
-    # forces = np.clip(tau, -maxF, maxF)
-
     joint_pos_0 = p.readUserDebugParameter(dp_joint_pos_0)
     joint_pos_1 = p.readUserDebugParameter(dp_joint_pos_1)
     joint_pos_2 = p.readUserDebugParameter(dp_joint_pos_2)
@@ -328,25 +284,95 @@ while 1:
     joint_pos_5 = p.readUserDebugParameter(dp_joint_pos_5)
     joint_pos_6 = p.readUserDebugParameter(dp_joint_pos_6)
 
-    # q_des = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
+    # # # q_des = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
 
-    # # arm.getInertiaMatrix()
+    # # drawInertiaBox(arm.getUUid(), -1, [1, 0, 0])
+    # # posX = p.readUserDebugParameter(dp_posX)
+    # # posY = p.readUserDebugParameter(dp_posY)
+    # # posZ = p.readUserDebugParameter(dp_posZ)
+    # # yaw = p.readUserDebugParameter(dp_yaw)
+    # # fingerAngle = p.readUserDebugParameter(dp_fingerAngle)
+    # # for i in range(7):
+    # #     drawInertiaBox(arm.getUUid(), i, [0, 1, 0])
 
-    # obs = arm.getObservation()
-    # q = []
-    # qd = []
-    # for i in range(len(obs)):
-    #     q.append(obs[i][0])
-    #     qd.append(obs[i][1])
-    # q = np.array(q)
-    # qd = np.array(qd)
+    # numJoints = len(arm.getMotorIndices())
+    # # p.getNumJoints(arm.getUUid())
+    # jointStates = p.getJointStates(arm.getUUid(), arm.getMotorIndices())
+    # q1 = []
+    # qdot1 = []
+    # zeroAccelerations = []
+    # for i in range(numJoints):
+    #     # print('i ' + str(i))
+    #     # print('index ' + str(arm.getMotorIndices()[i]))
+    #     q1.append(jointStates[i][0])
+    #     qdot1.append(jointStates[i][1])
+    #     zeroAccelerations.append(0)
+    # q = np.array(q1)
+    # qdot = np.array(qdot1)
+    # # print("len qdot " + str(len(qdot)))
+    # qdes = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
+    # # print("len qdes " + str(len(qdes)))
+    # qdotdes = np.array([0,0,0,0,0,0,0])
+    # # print("len qdotdes " + str(len(qdotdes)))
+    # qError = qdes - q
+    # # print("len qError " + str(len(qError)))
+    # qdotError = qdotdes - qdot
+    # # print("len qdotError " + str(len(qdotError)))
+    # Kp = np.diagflat([2,2,2,2,2,2,2])
+    # # print("Kp " + str(Kp))
+    # Kd = np.diagflat([0.1,0.1,0.1,0.1,0.1,0.1,0.1])
+    # pp = Kp.dot(qError)
+    # dd = Kd.dot(qdotError)
+    # # forces = pp + dd
 
-    # kp = 10.0
-    # kd = 0.5
+    # timeStep = 0.1
 
-    # cmd = kp * (q_des - q) - kd * qd
+    # M1 = p.calculateMassMatrix(arm.getUUid(), q1)
+    # M2 = np.array(M1)
+    # M = (M2 + Kd * timeStep)
+    # c1 = p.calculateInverseDynamics(arm.getUUid(), q1, qdot1, zeroAccelerations)
+    # c = np.array(c1)
+    # b = -c + pp + dd
+    # qddot = np.linalg.solve(M, b)
+    # tau = pp + dd - Kd.dot(qddot) * timeStep
+    # # tau = c
+    # # maxF = np.array(1000.0)
+    # # forces = np.clip(tau, -maxF, maxF)
 
-    cmd = tau
+    # cmd = tau
+    
+
+    # # # arm.getInertiaMatrix()
+
+    # # obs = arm.getObservation()
+    # # q = []
+    # # qd = []
+    # # for i in range(len(obs)):
+    # #     q.append(obs[i][0])
+    # #     qd.append(obs[i][1])
+    # # q = np.array(q)
+    # # qd = np.array(qd)
+
+    # # kp = 10.0
+    # # kd = 0.5
+
+    # # cmd = kp * (q_des - q) - kd * qd
+
+    # cmd = tau
+
+    # # GRAV COMP
+    # cmd = ctrl.compute(arm.getUUid(), arm.getMotorIndices())
+    # # JOINT PD
+    desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
+    desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+    kps = [400,400,400,400,400,400,400]
+    kds = [100,100,100,100,100,100,100]
+    # kps = [0.1,0.1,0.1,0.1,0.1,0.1,0.1]
+    # kds = [0.05,0.05,0.05,0.05,0.05,0.05,0.05]
+    maxForces = 10000000
+    timeStep = 1
+    cmd = ctrl_j_pd.compute(arm.getUUid(), arm.getMotorIndices(), desiredPositions, desiredVelocities, kps, kds,
+                maxForces)
 
     arm.setCommand(cmd)
 
@@ -354,6 +380,8 @@ while 1:
     # time.sleep(0.01)
     # p.setJointMotorControlArray(arm.getUUid()=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,0,0,0,0,0,0])
     p.stepSimulation()
+
+    # time.sleep(1/500) # TODO DLW
     
     # pass
 

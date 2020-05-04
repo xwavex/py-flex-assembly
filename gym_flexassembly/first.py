@@ -15,103 +15,103 @@ try:
 except (ImportError, SystemError):
     from controller import JointGravityCompensationController, JointPDController
 
-def drawInertiaBox(parentUid, parentLinkIndex, color):
-  dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
-  mass = dyn[0]
-  frictionCoeff = dyn[1]
-  inertia = dyn[2]
-  if (mass > 0):
-    Ixx = inertia[0]
-    Iyy = inertia[1]
-    Izz = inertia[2]
-    boxScaleX = 0.5 * math.sqrt(6 * (Izz + Iyy - Ixx) / mass)
-    boxScaleY = 0.5 * math.sqrt(6 * (Izz + Ixx - Iyy) / mass)
-    boxScaleZ = 0.5 * math.sqrt(6 * (Ixx + Iyy - Izz) / mass)
+# def drawInertiaBox(parentUid, parentLinkIndex, color):
+#   dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
+#   mass = dyn[0]
+#   frictionCoeff = dyn[1]
+#   inertia = dyn[2]
+#   if (mass > 0):
+#     Ixx = inertia[0]
+#     Iyy = inertia[1]
+#     Izz = inertia[2]
+#     boxScaleX = 0.5 * math.sqrt(6 * (Izz + Iyy - Ixx) / mass)
+#     boxScaleY = 0.5 * math.sqrt(6 * (Izz + Ixx - Iyy) / mass)
+#     boxScaleZ = 0.5 * math.sqrt(6 * (Ixx + Iyy - Izz) / mass)
 
-    halfExtents = [boxScaleX, boxScaleY, boxScaleZ]
-    pts = [[halfExtents[0], halfExtents[1], halfExtents[2]],
-           [-halfExtents[0], halfExtents[1], halfExtents[2]],
-           [halfExtents[0], -halfExtents[1], halfExtents[2]],
-           [-halfExtents[0], -halfExtents[1], halfExtents[2]],
-           [halfExtents[0], halfExtents[1], -halfExtents[2]],
-           [-halfExtents[0], halfExtents[1], -halfExtents[2]],
-           [halfExtents[0], -halfExtents[1], -halfExtents[2]],
-           [-halfExtents[0], -halfExtents[1], -halfExtents[2]]]
+#     halfExtents = [boxScaleX, boxScaleY, boxScaleZ]
+#     pts = [[halfExtents[0], halfExtents[1], halfExtents[2]],
+#            [-halfExtents[0], halfExtents[1], halfExtents[2]],
+#            [halfExtents[0], -halfExtents[1], halfExtents[2]],
+#            [-halfExtents[0], -halfExtents[1], halfExtents[2]],
+#            [halfExtents[0], halfExtents[1], -halfExtents[2]],
+#            [-halfExtents[0], halfExtents[1], -halfExtents[2]],
+#            [halfExtents[0], -halfExtents[1], -halfExtents[2]],
+#            [-halfExtents[0], -halfExtents[1], -halfExtents[2]]]
 
-    p.addUserDebugLine(pts[0],
-                       pts[1],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[1],
-                       pts[3],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[3],
-                       pts[2],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[2],
-                       pts[0],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[0],
+#                        pts[1],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[1],
+#                        pts[3],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[3],
+#                        pts[2],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[2],
+#                        pts[0],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
 
-    p.addUserDebugLine(pts[0],
-                       pts[4],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[1],
-                       pts[5],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[2],
-                       pts[6],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[3],
-                       pts[7],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[0],
+#                        pts[4],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[1],
+#                        pts[5],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[2],
+#                        pts[6],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[3],
+#                        pts[7],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
 
-    p.addUserDebugLine(pts[4 + 0],
-                       pts[4 + 1],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[4 + 1],
-                       pts[4 + 3],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[4 + 3],
-                       pts[4 + 2],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
-    p.addUserDebugLine(pts[4 + 2],
-                       pts[4 + 0],
-                       color,
-                       1,
-                       parentObjectUniqueId=parentUid,
-                       parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[4 + 0],
+#                        pts[4 + 1],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[4 + 1],
+#                        pts[4 + 3],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[4 + 3],
+#                        pts[4 + 2],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
+#     p.addUserDebugLine(pts[4 + 2],
+#                        pts[4 + 0],
+#                        color,
+#                        1,
+#                        parentObjectUniqueId=parentUid,
+#                        parentLinkIndex=parentLinkIndex)
 
 # Can alternatively pass in p.DIRECT
 client = p.connect(p.GUI)
@@ -244,7 +244,7 @@ dp_joint_pos_6 = p.addUserDebugParameter("j6", -dv, dv, 0)
 # kuka_gripper = hand
 # kuka_gripper = p.loadSDF("gripper/wsg50_one_motor_gripper_new_free_base.sdf")
 # print("kuka_gripper id = " + str(kuka_gripper))
-# 
+#
 # p.resetBasePositionAndOrientation(kuka_gripper, [0.923103, -0.200000, 1.250036],
 #                                   [-0.000000, 0.964531, -0.000002, -0.263970])
 # jointPositions = [
@@ -254,7 +254,7 @@ dp_joint_pos_6 = p.addUserDebugParameter("j6", -dv, dv, 0)
 #   p.resetJointState(kuka_gripper, jointIndex, jointPositions[jointIndex])
 #   p.setJointMotorControl2(kuka_gripper, jointIndex, p.POSITION_CONTROL, jointPositions[jointIndex],
 #                           0)
-# 
+#
 # kuka_cid = p.createConstraint(arm, 6, kuka_gripper, 0, p.JOINT_FIXED, [0, 0, 0], [0, 0, 0.05],
 #                               [0, 0, 0])
 
@@ -340,7 +340,7 @@ while 1:
     # # forces = np.clip(tau, -maxF, maxF)
 
     # cmd = tau
-    
+
 
     # # # arm.getInertiaMatrix()
 
@@ -382,7 +382,7 @@ while 1:
     p.stepSimulation()
 
     # time.sleep(1/500) # TODO DLW
-    
+
     # pass
 
 # # Torque control

@@ -114,7 +114,8 @@ except (ImportError, SystemError):
 #                        parentLinkIndex=parentLinkIndex)
 
 # Can alternatively pass in p.DIRECT
-client = p.connect(p.GUI)
+# client = p.connect(p.GUI)
+client = p.connect(p.GUI_SERVER)
 p.setGravity(0, 0, -9.81, physicsClientId=client)
 
 # import data as gfd
@@ -380,6 +381,7 @@ while 1:
     # time.sleep(0.01)
     # p.setJointMotorControlArray(arm.getUUid()=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,0,0,0,0,0,0])
     p.stepSimulation()
+    
 
     # time.sleep(1/500) # TODO DLW
 

@@ -11,9 +11,9 @@ except (ImportError, SystemError):
     from robots import KukaIIWA7
 
 try:
-    from .controller import JointGravityCompensationController, JointPDController
+    from .controller import JointGravityCompensationController, JointPDController, OperationalSpaceController
 except (ImportError, SystemError):
-    from controller import JointGravityCompensationController, JointPDController
+    from controller import JointGravityCompensationController, JointPDController, OperationalSpaceController
 
 # Can alternatively pass in p.DIRECT
 client = p.connect(p.GUI)
@@ -56,6 +56,14 @@ p.setRealTimeSimulation(0)
 ctrl = JointGravityCompensationController(p)
 # # JOINT PD
 ctrl_j_pd = JointPDController(p)
+# # OPERATIONAL SPACE CONTROLLER
+ctrl_osc = OperationalSpaceController(
+    p,
+    kp=50,
+    # null_controllers=[damping],
+    # control (x, y, gamma) out of [x, y, z, alpha, beta, gamma]
+    # ctrlr_dof=[True, True, False, False, False, True],
+)
 
 arm.setControlMode("JOINT_TORQUE_CONTROL")
 p.setTimeStep(0.001) # TODO DLW
@@ -68,8 +76,8 @@ while 1:
     joint_pos_5 = p.readUserDebugParameter(dp_joint_pos_5)
     joint_pos_6 = p.readUserDebugParameter(dp_joint_pos_6)
 
-    # # GRAV COMP
-    # cmd = ctrl.compute(arm.getUUid(), arm.getMotorIndices())
+    # GRAV COMP
+    cmd = ctrl.compute(arm.getUUid(), arm.getMotorIndices())
     # # JOINT PD
     # desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
     # desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
@@ -80,8 +88,12 @@ while 1:
     # cmd = ctrl_j_pd.compute(arm.getUUid(), arm.getMotorIndices(), desiredPositions, desiredVelocities, kps, kds,
     #             maxForces)
     # # CART PD
-    desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
-    desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+    # # OSC
+    # cmd = ctrl_osc.generate(q=feedback["q"], dq=feedback["dq"], target=target,)
+
+    # desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5]
+    # desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0]
+    # cmd = ctrl_osc.compute(arm.getUUid(), arm.getMotorIndices(), desiredPositions, desiredVelocities)
 
     arm.setCommand(cmd)
 

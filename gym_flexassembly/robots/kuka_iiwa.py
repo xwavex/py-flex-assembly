@@ -52,7 +52,7 @@ class KukaIIWA:
         # self.kukaUid = objects[0]
         #for i in range (p.getNumJoints(self.kukaUid)):
         #  print(p.getJointInfo(self.kukaUid,i))
-        p.resetBasePositionAndOrientation(self.kukaUid, [-0.100000, 0.000000, 0.070000],
+        p.resetBasePositionAndOrientation(self.kukaUid, [-1.100000, 0.000000, 0.070000],
                                       [0.000000, 0.000000, 0.000000, 1.000000])
         self.jointPositions = [
             0.006418, 0.413184, -0.011401, -1.589317, 0.005379, 1.137684, -0.006539, 0.000048,

@@ -274,118 +274,118 @@ ctrl = JointGravityCompensationController(p)
 ctrl_j_pd = JointPDController(p)
 
 # p.setJointMotorControlArray(arm.getUUid()=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,1.2,0,1.2,0,0,0],positionGains=[500,500,500,500,500,500,500],velocityGains=[100,100,100,100,100,100,100])
+
+
 arm.setControlMode("JOINT_TORQUE_CONTROL")
+print("arm.getUUid() = " + str(arm.getUUid()))
+
 p.setTimeStep(0.001) # TODO DLW
-while 1:
-    joint_pos_0 = p.readUserDebugParameter(dp_joint_pos_0)
-    joint_pos_1 = p.readUserDebugParameter(dp_joint_pos_1)
-    joint_pos_2 = p.readUserDebugParameter(dp_joint_pos_2)
-    joint_pos_3 = p.readUserDebugParameter(dp_joint_pos_3)
-    joint_pos_4 = p.readUserDebugParameter(dp_joint_pos_4)
-    joint_pos_5 = p.readUserDebugParameter(dp_joint_pos_5)
-    joint_pos_6 = p.readUserDebugParameter(dp_joint_pos_6)
 
-    # # # q_des = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
+print("arm.getMotorIndices() = " + str(arm.getMotorIndices()))
 
-    # # drawInertiaBox(arm.getUUid(), -1, [1, 0, 0])
-    # # posX = p.readUserDebugParameter(dp_posX)
-    # # posY = p.readUserDebugParameter(dp_posY)
-    # # posZ = p.readUserDebugParameter(dp_posZ)
-    # # yaw = p.readUserDebugParameter(dp_yaw)
-    # # fingerAngle = p.readUserDebugParameter(dp_fingerAngle)
-    # # for i in range(7):
-    # #     drawInertiaBox(arm.getUUid(), i, [0, 1, 0])
+# while 1:
+#     joint_pos_0 = p.readUserDebugParameter(dp_joint_pos_0)
+#     joint_pos_1 = p.readUserDebugParameter(dp_joint_pos_1)
+#     joint_pos_2 = p.readUserDebugParameter(dp_joint_pos_2)
+#     joint_pos_3 = p.readUserDebugParameter(dp_joint_pos_3)
+#     joint_pos_4 = p.readUserDebugParameter(dp_joint_pos_4)
+#     joint_pos_5 = p.readUserDebugParameter(dp_joint_pos_5)
+#     joint_pos_6 = p.readUserDebugParameter(dp_joint_pos_6)
 
-    # numJoints = len(arm.getMotorIndices())
-    # # p.getNumJoints(arm.getUUid())
-    # jointStates = p.getJointStates(arm.getUUid(), arm.getMotorIndices())
-    # q1 = []
-    # qdot1 = []
-    # zeroAccelerations = []
-    # for i in range(numJoints):
-    #     # print('i ' + str(i))
-    #     # print('index ' + str(arm.getMotorIndices()[i]))
-    #     q1.append(jointStates[i][0])
-    #     qdot1.append(jointStates[i][1])
-    #     zeroAccelerations.append(0)
-    # q = np.array(q1)
-    # qdot = np.array(qdot1)
-    # # print("len qdot " + str(len(qdot)))
-    # qdes = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
-    # # print("len qdes " + str(len(qdes)))
-    # qdotdes = np.array([0,0,0,0,0,0,0])
-    # # print("len qdotdes " + str(len(qdotdes)))
-    # qError = qdes - q
-    # # print("len qError " + str(len(qError)))
-    # qdotError = qdotdes - qdot
-    # # print("len qdotError " + str(len(qdotError)))
-    # Kp = np.diagflat([2,2,2,2,2,2,2])
-    # # print("Kp " + str(Kp))
-    # Kd = np.diagflat([0.1,0.1,0.1,0.1,0.1,0.1,0.1])
-    # pp = Kp.dot(qError)
-    # dd = Kd.dot(qdotError)
-    # # forces = pp + dd
+#     # # # q_des = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
 
-    # timeStep = 0.1
+#     # # drawInertiaBox(arm.getUUid(), -1, [1, 0, 0])
+#     # # posX = p.readUserDebugParameter(dp_posX)
+#     # # posY = p.readUserDebugParameter(dp_posY)
+#     # # posZ = p.readUserDebugParameter(dp_posZ)
+#     # # yaw = p.readUserDebugParameter(dp_yaw)
+#     # # fingerAngle = p.readUserDebugParameter(dp_fingerAngle)
+#     # # for i in range(7):
+#     # #     drawInertiaBox(arm.getUUid(), i, [0, 1, 0])
 
-    # M1 = p.calculateMassMatrix(arm.getUUid(), q1)
-    # M2 = np.array(M1)
-    # M = (M2 + Kd * timeStep)
-    # c1 = p.calculateInverseDynamics(arm.getUUid(), q1, qdot1, zeroAccelerations)
-    # c = np.array(c1)
-    # b = -c + pp + dd
-    # qddot = np.linalg.solve(M, b)
-    # tau = pp + dd - Kd.dot(qddot) * timeStep
-    # # tau = c
-    # # maxF = np.array(1000.0)
-    # # forces = np.clip(tau, -maxF, maxF)
+#     numJoints = len(arm.getMotorIndices())
+#     # p.getNumJoints(arm.getUUid())
+#     jointStates = p.getJointStates(arm.getUUid(), arm.getMotorIndices())
+#     q1 = []
+#     qdot1 = []
+#     zeroAccelerations = []
+#     for i in range(numJoints):
+#         # print('i ' + str(i))
+#         # print('index ' + str(arm.getMotorIndices()[i]))
+#         q1.append(jointStates[i][0])
+#         qdot1.append(jointStates[i][1])
+#         zeroAccelerations.append(0)
+#     # q = np.array(q1)
+#     # qdot = np.array(qdot1)
+#     # # print("len qdot " + str(len(qdot)))
+#     # qdes = np.array([joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6])
+#     # # print("len qdes " + str(len(qdes)))
+#     # qdotdes = np.array([0,0,0,0,0,0,0])
+#     # # print("len qdotdes " + str(len(qdotdes)))
+#     # qError = qdes - q
+#     # # print("len qError " + str(len(qError)))
+#     # qdotError = qdotdes - qdot
+#     # # print("len qdotError " + str(len(qdotError)))
+#     # Kp = np.diagflat([2,2,2,2,2,2,2])
+#     # # print("Kp " + str(Kp))
+#     # Kd = np.diagflat([0.1,0.1,0.1,0.1,0.1,0.1,0.1])
+#     # pp = Kp.dot(qError)
+#     # dd = Kd.dot(qdotError)
+#     # # forces = pp + dd
 
-    # cmd = tau
+#     # timeStep = 0.1
+
+#     # M1 = p.calculateMassMatrix(arm.getUUid(), q1)
+#     # M2 = np.array(M1)
+#     # M = (M2 + Kd * timeStep)
+#     # print("POS = " + str(q1))
+#     # print("VEL = " + str(qdot1))
+#     c1 = p.calculateInverseDynamics(arm.getUUid(), q1, qdot1, zeroAccelerations)
+#     print("GRA = " + str(c1))
+#     # c = np.array(c1)
+#     # b = -c + pp + dd
+#     # qddot = np.linalg.solve(M, b)
+#     # tau = pp + dd - Kd.dot(qddot) * timeStep
+#     # # tau = c
+#     # # maxF = np.array(1000.0)
+#     # # forces = np.clip(tau, -maxF, maxF)
+
+#     # cmd = tau
 
 
-    # # # arm.getInertiaMatrix()
+#     # # # arm.getInertiaMatrix()
 
-    # # obs = arm.getObservation()
-    # # q = []
-    # # qd = []
-    # # for i in range(len(obs)):
-    # #     q.append(obs[i][0])
-    # #     qd.append(obs[i][1])
-    # # q = np.array(q)
-    # # qd = np.array(qd)
+#     # # obs = arm.getObservation()
+#     # # q = []
+#     # # qd = []
+#     # # for i in range(len(obs)):
+#     # #     q.append(obs[i][0])
+#     # #     qd.append(obs[i][1])
+#     # # q = np.array(q)
+#     # # qd = np.array(qd)
 
-    # # kp = 10.0
-    # # kd = 0.5
+#     # # kp = 10.0
+#     # # kd = 0.5
 
-    # # cmd = kp * (q_des - q) - kd * qd
+#     # # cmd = kp * (q_des - q) - kd * qd
 
-    # cmd = tau
+#     # cmd = tau
 
-    # # GRAV COMP
-    # cmd = ctrl.compute(arm.getUUid(), arm.getMotorIndices())
-    # # JOINT PD
-    desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
-    desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-    kps = [600,600,600,600,600,600,600]
-    kds = [200,200,200,200,200,200,200]
-    # kps = [0.1,0.1,0.1,0.1,0.1,0.1,0.1]
-    # kds = [0.05,0.05,0.05,0.05,0.05,0.05,0.05]
-    maxForces = 10000000
-    timeStep = 1
-    cmd = ctrl_j_pd.compute(arm.getUUid(), arm.getMotorIndices(), desiredPositions, desiredVelocities, kps, kds,
-                maxForces)
+#     # # GRAV COMP
+#     # cmd = ctrl.compute(arm.getUUid(), arm.getMotorIndices())
+#     # # JOINT PD
+   
 
-    arm.setCommand(cmd)
-
-    # TODO REALTIME ? How to do this? PD Controller Example?
-    # time.sleep(0.01)
-    # p.setJointMotorControlArray(arm.getUUid()=arm,jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,0,0,0,0,0,0])
-    p.stepSimulation()
+#     # TODO REALTIME ? How to do this? PD Controller Example?
+#     # time.sleep(0.01)
+#     # p.setJointMotorControlArray(arm.getUUid(),jointIndices=[1,2,3,4,5,6,7],controlMode=p.PD_CONTROL,targetPositions=[0,0,0,0,0,0,0])
+#     # p.setJointMotorControlArray(arm.getUUid(),jointIndices=arm.getMotorIndices(),controlMode=p.TORQUE_CONTROL,forces=c1)
+#     # p.stepSimulation()
     
 
-    # time.sleep(1/500) # TODO DLW
+#     time.sleep(1/500) # TODO DLW
 
-    # pass
+#     # pass
 
 # # Torque control
 # https://pybullet.org/Bullet/phpB3/viewtopic.php?t=12644

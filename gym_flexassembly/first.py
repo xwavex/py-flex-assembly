@@ -136,7 +136,8 @@ planeId = p.loadURDF("plane.urdf")
 # print("terminal_case = " + str(terminal_case))
 # obj_terminal_case = terminal_case[0]
 
-# test_link = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/test.urdf")
+schunk = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/schunk-egp-40/model.urdf", useFixedBase=True)
+p.resetBasePositionAndOrientation(schunk, [1, 1, 1], [1,0,0,0])
 # test_jenga = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/test_link/test_link.urdf", 0,0,0.2, 0.000000, 0.707107, 0.000000, 0.707107)
 
 # hand = p.loadURDF("/home/dwigand/citk/systems/cogimon-minimal-nightly/share/gazebo/models/cogimon/schunk-egp-40/model.urdf",[1.0, 1.0, 0], useFixedBase=False)

@@ -2,6 +2,7 @@ import numpy as np
 
 from gym_flexassembly.utils import transformations
 
+# https://studywolf.wordpress.com/2018/12/03/force-control-of-task-space-orientation/
 
 class OperationalSpaceController(object):
     """ Implements an operational space controller (OSC)
@@ -205,7 +206,11 @@ class OperationalSpaceController(object):
         joint_torques = [state[3] for state in joint_states]
         return joint_positions, joint_velocities, joint_torques
 
-    def compute(self, bodyUniqueId, jointIndices, desiredPositions, desiredVelocities):
+    def compute(self, bodyUniqueId, jointIndices, desiredPositions, desiredVelocities, kkp, kko):
+        # self.kp = kkp
+        # self.ko = kko
+        # self.kv = np.sqrt(self.kp + self.ko)
+
         timeStep = 1/1000 # TODO DLW
         numBaseDofs = 0
         numPosBaseDofs = 0
@@ -214,7 +219,7 @@ class OperationalSpaceController(object):
         q1 = []
         qdot1 = []
         zeroAccelerations = []
-        qError = []
+        # qError = []
         if (baseMass > 0):
             numBaseDofs = 6
             numPosBaseDofs = 7
@@ -222,10 +227,14 @@ class OperationalSpaceController(object):
             qdot1 = [0] * numBaseDofs
             zeroAccelerations = [0] * numBaseDofs
             angDiff = [0, 0, 0]
-            qError = [
-                desiredPositions[0] - curPos[0], desiredPositions[1] - curPos[1],
-                desiredPositions[2] - curPos[2], angDiff[0], angDiff[1], angDiff[2]
-            ]
+            # qError = [
+            #     desiredPositions[0] - curPos[0],
+            #     desiredPositions[1] - curPos[1],
+            #     desiredPositions[2] - curPos[2],
+            #     angDiff[0],
+            #     angDiff[1],
+            #     angDiff[2]
+            # ]
         numJoints = len(jointIndices)
         jointStates = self._pb.getJointStates(bodyUniqueId, jointIndices)
 
@@ -261,20 +270,29 @@ class OperationalSpaceController(object):
         zero_vec = [0.0] * numJoints
 
         result = self._pb.getLinkState(bodyUniqueId,
-                        numJoints - 1,
+                        7,
                         computeLinkVelocity=1,
                         computeForwardKinematics=1)
         link_trn, link_rot, com_trn, com_rot, frame_pos, frame_rot, link_vt, link_vr = result
 
-        state = self._pb.getLinkState(bodyUniqueId, numJoints - 1)
+        state = self._pb.getLinkState(bodyUniqueId, 7)
         pos = state[0]
         orn = state[1]
-        euler = self._pb.getEulerFromQuaternion(orn)
+        # euler = self._pb.getEulerFromQuaternion(orn)
+        # euler = transformations.euler_from_quaternion(orn)
+        tmp_bullet = self._pb.getQuaternionFromEuler([desiredPositions[3:][0], desiredPositions[3:][1], desiredPositions[3:][2]])
+        debug_orn_bullet = [tmp_bullet[3], tmp_bullet[0], tmp_bullet[1], tmp_bullet[2]]
+        debug_orn = transformations.quaternion_from_euler(desiredPositions[3:][0], desiredPositions[3:][1], desiredPositions[3:][2], axes="rxyz")
+        # print("qb = " + str(debug_orn_bullet))
+        # print("qs = " + str(debug_orn))
+
+        non_bullet_orn = [orn[3], orn[0], orn[1], orn[2]]
+        # print("qc = " + str(non_bullet_orn))
 
         if desiredVelocities is None:
             desiredVelocities = self.ZEROS_SIX
 
-        jac_t, jac_r = self._pb.calculateJacobian(bodyUniqueId, numJoints - 1, com_trn, mpos, zero_vec, zero_vec)  # Jacobian
+        jac_t, jac_r = self._pb.calculateJacobian(bodyUniqueId, 7, com_trn, mpos, zero_vec, zero_vec)  # Jacobian
         J = np.concatenate((jac_t, jac_r))
 
         # isolate rows of Jacobian corresponding to controlled task space DOF
@@ -293,7 +311,7 @@ class OperationalSpaceController(object):
 
         # if orientation is being controlled
         if np.sum(self.ctrlr_dof[3:]) > 0:
-            u_task[3:] = self._calc_orientation_forces(desiredPositions[3:], q, orn)
+            u_task[3:] = self._calc_orientation_forces(desiredPositions[3:], q, non_bullet_orn)
 
         # task space integrated error term
         if self.ki != 0:

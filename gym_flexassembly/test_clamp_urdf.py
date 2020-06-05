@@ -42,7 +42,7 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
 
 # Floor SHOULD BE ALWAYS ID 0
-p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/plane_solid.urdf", useMaximalCoordinates=True) # Brauche ich fuer die hit rays
+p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/gym_flexassembly/data/plane_solid.urdf", useMaximalCoordinates=True) # Brauche ich fuer die hit rays
 
 # Enable rendering again
 p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
@@ -51,7 +51,7 @@ p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 ### CLAMP MOCK ###
 ################################
 
-w_qs_1 = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/src/data/W_QS_1/W_QS_1.urdf", useFixedBase=False)
+w_qs_1 = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/gym_flexassembly/data/W_QS_1/W_QS_1.urdf", useFixedBase=False)
 p.resetBasePositionAndOrientation(w_qs_1, [0,0,0.037],[0,0,0,1])
 max_force_for_clip = 10.0
 p.setJointMotorControl2(bodyIndex=w_qs_1, jointIndex=1, controlMode=p.POSITION_CONTROL, targetPosition=0, targetVelocity=0, force=max_force_for_clip)

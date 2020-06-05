@@ -80,17 +80,17 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
 
 # Floor SHOULD BE ALWAYS ID 0
-p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/plane_solid.urdf", useMaximalCoordinates=True) # Brauche ich fuer die hit rays
+p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/gym_flexassembly/data/plane_solid.urdf", useMaximalCoordinates=True) # Brauche ich fuer die hit rays
 
 # Table
-table_id = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/3d/table_profile_1.urdf", useFixedBase=True, flags = p.URDF_USE_INERTIA_FROM_FILE)
+table_id = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/gym_flexassembly/data/3d/table_profile_1.urdf", useFixedBase=True, flags = p.URDF_USE_INERTIA_FROM_FILE)
 table_offset_world_x = -0.85
 table_offset_world_y = 0
 table_offset_world_z = 0
 p.resetBasePositionAndOrientation(table_id, [table_offset_world_x, table_offset_world_y, table_offset_world_z], [0,0,0,1])
 
 # Workpiece to be polished
-workpiece_id = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/3d/bend_wood.urdf", useFixedBase=False, flags = p.URDF_USE_INERTIA_FROM_FILE)
+workpiece_id = p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/gym_flexassembly/data/3d/bend_wood.urdf", useFixedBase=False, flags = p.URDF_USE_INERTIA_FROM_FILE)
 wood_offset_table_x = 0.88
 wood_offset_table_y = 0.22
 wood_offset_table_z = 0.73
@@ -108,8 +108,7 @@ p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 ### CLAMP MOCK ###
 ################################
 
-# Floor SHOULD BE ALWAYS ID 0
-p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/W_QS_1/W_QS_1.urdf")
+p.loadURDF("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/gym_flexassembly/data/W_QS_1/W_QS_1.urdf")
 
 ################################
 ### KUKA MOCK ###
@@ -157,7 +156,7 @@ dp_frame_ry = p.addUserDebugParameter("ry", -3.14*2, 3.14*2, 0)
 ### Main loop ###
 #################
 
-objtrimesh = trimesh.load_mesh("/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/3d/bend_wood_y_z.obj")
+objtrimesh = trimesh.load_mesh("/home/dwigand/code/cogimon/CoSimA/pyBullet/catkin_py_ws/src/py-flex-assembly/gym_flexassembly/data/3d/bend_wood_y_z.obj")
 objtrimesh.apply_scale(0.1)
 # Need to be done to be conform with bullet loading the model
 # objtrimesh.apply_transform(trimesh.transformations.euler_matrix(1.57, 0, 0, 'rxyz'))

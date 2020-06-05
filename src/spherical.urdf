@@ -1,0 +1,36 @@
+<robot name="dumpUrdf">
+	
+	<link name="root" >
+		<inertial>
+				<origin rpy = "0 0 0" xyz = "0.000000 0.280000 0.000000" />
+			 <mass value = "6.000000" />
+			<inertia ixx = "0.1" ixy = "0" ixz = "0" iyy = "0.1" iyz = "0" izz = "0.1" />
+		</inertial>
+		<collision>
+				<origin rpy = "0 0 0" xyz = "0.000000 0.280000 0.000000" />
+			<geometry>
+				<sphere radius = "0.360000" />
+			</geometry>
+		</collision>
+	</link>
+	<link name="chest" >
+		<inertial>
+				<origin rpy = "0 0 0" xyz = "0.000000 0.480000 0.000000" />
+			 <mass value = "14.000000" />
+			<inertia ixx = "0.1" ixy = "0" ixz = "0" iyy = "0.1" iyz = "0" izz = "0.1" />
+		</inertial>
+		<collision>
+				<origin rpy = "0 0 0" xyz = "0.000000 0.480000 0.000000" />
+			<geometry>
+				<sphere radius = "0.440000" />
+			</geometry>
+		</collision>
+	</link>
+	<joint name="chest" type="spherical" >
+		<parent link="root" />
+		<child link="chest" />
+				<origin rpy = "0 0 0" xyz = "0.000000 0.944604 0.000000" />
+	</joint>
+
+</robot>
+ 

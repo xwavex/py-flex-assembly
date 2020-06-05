@@ -1,0 +1,171 @@
+<?xml version="1.0" ?>
+<robot name="frame">
+  <link name="base">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="10.0"/>
+       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+	      <sphere radius="0.1"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+				<sphere radius="0.1"/>
+      </geometry>
+      <material name="trans_transparent">
+        <color rgba="1 1 1 0"/>
+        <specular rgb="11 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="base_to_x" type="fixed">
+    <parent link="base"/>
+    <child link="x"/>
+    <origin rpy="0 1.5708 0" xyz="0.05 0 0"/>
+  </joint>
+
+  <link name="x">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="10.0"/>
+       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+     <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+				<cylinder radius="0.01" length="0.1"/>
+      </geometry>
+      <material name="red_transparent">
+        <color rgba="1 0 0 0.5"/>
+        <specular rgb="11 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="x_to_rot_x" type="fixed">
+    <parent link="x"/>
+    <child link="rot_x"/>
+    <origin rpy="0 0 0" xyz="0 0 0.03"/>
+  </joint>
+
+  <link name="rot_x">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="10.0"/>
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+     <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+				<mesh filename="arrow_notex.obj" scale="0.3 0.3 0.3"/>
+      </geometry>
+      <material name="red_transparent">
+        <color rgba="1 0 0 0.5"/>
+        <specular rgb="11 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="base_to_y" type="fixed">
+    <parent link="base"/>
+    <child link="y"/>
+    <origin rpy="-1.5708 0 0" xyz="0 0.05 0"/>
+  </joint>
+
+  <link name="y">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="10.0"/>
+       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+     <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+				<cylinder radius="0.01" length="0.1"/>
+      </geometry>
+      <material name="green_transparent">
+        <color rgba="0 1 0 0.5"/>
+        <specular rgb="1 11 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="y_to_rot_y" type="fixed">
+    <parent link="y"/>
+    <child link="rot_y"/>
+    <origin rpy="0 0 0" xyz="0 0 0.03"/>
+  </joint>
+
+  <link name="rot_y">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="10.0"/>
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+     <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+				<mesh filename="arrow_notex.obj" scale="0.3 0.3 0.3"/>
+      </geometry>
+      <material name="green_transparent">
+        <color rgba="0 1 0 0.5"/>
+        <specular rgb="1 11 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="base_to_z" type="fixed">
+    <parent link="base"/>
+    <child link="z"/>
+    <origin rpy="0 0 0" xyz="0 0 0.05"/>
+  </joint>
+
+  <link name="z">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="10.0"/>
+       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+     <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+				<cylinder radius="0.01" length="0.1"/>
+      </geometry>
+      <material name="blue_transparent">
+        <color rgba="0 0 1 0.5"/>
+        <specular rgb="1 1 11"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="z_to_rot_z" type="fixed">
+    <parent link="z"/>
+    <child link="rot_z"/>
+    <origin rpy="0 0 0" xyz="0 0 0.03"/>
+  </joint>
+
+  <link name="rot_z">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="10.0"/>
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+     <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+				<mesh filename="arrow_notex.obj" scale="0.3 0.3 0.3"/>
+      </geometry>
+      <material name="blue_transparent">
+        <color rgba="0 0 1 0.5"/>
+        <specular rgb="1 1 11"/>
+      </material>
+    </visual>
+  </link>
+</robot>
+

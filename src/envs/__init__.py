@@ -1,0 +1,1 @@
+from gym_flexassembly.envs.flexassembly_env import FlexAssemblyEnv

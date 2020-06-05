@@ -24,8 +24,11 @@ from gym.utils import seeding
 # DEPLOYMENT IMPORTS
 from pkg_resources import parse_version
 
-# FLEX ASSEMBLY IMPORTS
+# FLEX ASSEMBLY DATA IMPORTS
 from gym_flexassembly import data as flexassembly_data
+
+# FLEX ASSEMBLY ROBOT IMPORTS
+from gym_flexassembly.robots.kuka_iiwa import KukaIIWA, KukaIIWA7, KukaIIWA14
 
 class FlexPolishingEnv(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
@@ -100,6 +103,23 @@ class FlexPolishingEnv(gym.Env):
         # Enable rendering again
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 
+    def loadRobot(self):
+        # Disable rendering
+        p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
+
+        self.kuka7_1 = KukaIIWA7()
+        p.resetBasePositionAndOrientation(self.kuka7_1.getUUid(), [0,-0.2,0.5], [0,0,0,1])
+        collisionFilterGroup_kuka = 0x10
+        collisionFilterMask_kuka = 0x1
+        for i in range(p.getNumJoints(self.kuka7_1.getUUid())):
+            p.setCollisionFilterGroupMask(self.kuka7_1.getUUid(), i-1, collisionFilterGroup_kuka, collisionFilterMask_kuka)
+        p.enableJointForceTorqueSensor(self.kuka7_1.getUUid(), 8) # Why 8?
+
+        arm_ft_7 = p.addUserDebugLine([0, 0, 0], [0, 0, 0], [0.6, 0.3, 0.1], parentObjectUniqueId=self.kuka7_1.getUUid(), parentLinkIndex=7)
+
+        # Enable rendering again
+        p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
+
 
     def reset(self):
         self._terminated = False
@@ -110,7 +130,9 @@ class FlexPolishingEnv(gym.Env):
 
 
         # TODO how to delete all elements in preface?
+
         self.loadEnvironment()
+        self.loadRobot()
 
         # p.loadURDF(os.path.join(self._urdfRoot_pybullet, "plane.urdf"), [0, 0, -1])
         # p.loadURDF(os.path.join(self._urdfRoot_pybullet, "table/table.urdf"), 0.5000000, 0.00000, -.820000,
@@ -184,6 +206,10 @@ class FlexPolishingEnv(gym.Env):
         #     time.sleep(self._timeStep)
 
         # self._observation = self.getExtendedObservation()
+
+        p.stepSimulation()
+        if self._gui:
+            time.sleep(self._timeStep) # TODO DLW
 
         done = self._termination()
 

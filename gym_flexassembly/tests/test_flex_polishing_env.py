@@ -25,6 +25,9 @@ def main():
     # motorsIds.append(environment._p.addUserDebugParameter("yaw", -dv, dv, 0))
     # motorsIds.append(environment._p.addUserDebugParameter("fingerAngle", 0, 0.3, .3))
 
+    while(1):
+        environment.step([])
+
     # done = False
     # while (not done):
 

@@ -1,46 +1,48 @@
 import os, inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(os.path.dirname(currentdir))
-os.sys.path.insert(0, parentdir)
+# currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# parentdir = os.path.dirname(os.path.dirname(currentdir))
+# os.sys.path.insert(0, parentdir)
 
 import pybullet as p
 import numpy as np
 import copy
 import math
 
-# import pybullet_data
-import gym_flexassembly.data
+# KDL SOLVER IMPORTS
+# import PyKDL
+
+# FLEX ASSEMBLY DATA IMPORTS
+from gym_flexassembly import data as flexassembly_data
 
 class KukaIIWA:
-    def __init__(self, urdfRootPath=gym_flexassembly.data.getDataPath(), timeStep=0.01, variant='7'):
+    def __init__(self, pos=[0,0,0.07], orn=[0,0,0,1], urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, variant='7'):
         self.variant = variant
+        self._pos = pos
+        self._orn = orn
         self.urdfRootPath = urdfRootPath
         self.timeStep = timeStep
-        self.maxVelocity = .35
-        self.maxForce = 200.
-        self.fingerAForce = 2
-        self.fingerBForce = 2.5
-        self.fingerTipForce = 2
-        self.useInverseKinematics = 1
-        self.useSimulation = 1
-        self.useNullSpace = 21
-        self.useOrientation = 1
+        self.maxVelocity = 0.35
+        self.maxForce = 200.0
         self.kukaEndEffectorIndex = 6
         self.kukaGripperIndex = 7
         #lower limits for null space
-        self.ll = [-.967, -2, -2.96, 0.19, -2.96, -2.09, -3.05]
+        self.ll = [-.967, -2, -2.96, 0.19, -2.96, -2.09, -3.05] # TODO find right values!
         #upper limits for null space
-        self.ul = [.967, 2, 2.96, 2.29, 2.96, 2.09, 3.05]
-        #joint ranges for null space
-        self.jr = [5.8, 4, 5.8, 4, 5.8, 4, 6]
-        #restposes for null space
-        self.rp = [0, 0, 0, 0.5 * math.pi, 0, -math.pi * 0.5 * 0.66, 0]
-        #joint damping coefficents
-        self.jd = [
-            0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001,
-            0.00001, 0.00001, 0.00001, 0.00001
-        ]
+        self.ul = [.967, 2, 2.96, 2.29, 2.96, 2.09, 3.05] # TODO find right values!
+
+
+        # Init
+        self.cur_q = [0.006418, 0.413184, -0.011401, -1.589317, 0.005379, 1.137684, -0.006539]
+        self.cur_qdot = [0,0,0,0,0,0,0]
+        self.cur_rF = [0,0,0,0,0,0,0]
+        self.cur_eF = [0,0,0,0,0,0,0]
+
         self.reset()
+
+        # TODO 1) add collision stuff
+        # TODO 2) fix getInertiaMatrix, getGravityVector
+        # TODO 3) add jacobian
+        # TODO 4) add jacobian dot
 
     def reset(self):
         if self.variant == '14':
@@ -48,30 +50,18 @@ class KukaIIWA:
             # flags=p.URDF_USE_INERTIA_FROM_FILE
         else:
             self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "kuka-iiwa-7/model.urdf"), useFixedBase=True)
-        self.controlMode = "JOINT_TORQUE_CONTROL"
-        # self.kukaUid = objects[0]
-        #for i in range (p.getNumJoints(self.kukaUid)):
-        #  print(p.getJointInfo(self.kukaUid,i))
-        # p.resetBasePositionAndOrientation(self.kukaUid, [-1.100000, 0.000000, 0.070000],
-        #                               [0.000000, 0.000000, 0.000000, 1.000000])
-        p.resetBasePositionAndOrientation(self.kukaUid, [0.00000, 0.000000, 0.070000],
-                                      [0.000000, 0.000000, 0.000000, 1.000000])
-        self.jointPositions = [
-            0.006418, 0.413184, -0.011401, -1.589317, 0.005379, 1.137684, -0.006539, 0.000048,
-            -0.299912, 0.000000, -0.000043, 0.299960, 0.000000, -0.000200
-        ]
-        self.numJoints = p.getNumJoints(self.kukaUid)
-        for jointIndex in range(self.numJoints):
-            p.resetJointState(self.kukaUid, jointIndex, self.jointPositions[jointIndex])
-            p.setJointMotorControl2(self.kukaUid,
-                                    jointIndex,
-                                    p.POSITION_CONTROL,
-                                    targetPosition=self.jointPositions[jointIndex],
-                                    force=self.maxForce)
 
-        # # self.trayUid = p.loadURDF(os.path.join(self.urdfRootPath, "tray/tray.urdf"), 0.640000, 0.075000, -0.190000, 0.000000, 0.000000, 1.000000, 0.000000)
-        # self.endEffectorPos = [0.537, 0.0, 0.5]
-        # self.endEffectorAngle = 0
+        p.resetBasePositionAndOrientation(self.kukaUid, self._pos, self._orn)
+
+        self.numJoints = p.getNumJoints(self.kukaUid)
+        # for jointIndex in range(self.numJoints):
+        # Reset joints to the initial configuration
+        # p.resetJointState(self.kukaUid, jointIndex, self.cur_q[jointIndex])
+        # p.setJointMotorControl2(self.kukaUid,
+        #                         jointIndex,
+        #                         p.POSITION_CONTROL,
+        #                         targetPosition=self.cur_q[jointIndex],
+        #                         force=self.maxForce)
 
         self.motorNames = []
         self.motorIndices = []
@@ -84,11 +74,17 @@ class KukaIIWA:
                 self.motorNames.append(str(jointInfo[1]))
                 self.motorIndices.append(i)
                 self.zeroForces.append(0.0)
+            else:
+                print("ignored joint " + str(jointInfo[1]) + ", index " + str(i))
 
-    # def getActionDimension(self):
-    #     if (self.useInverseKinematics):
-    #         return len(self.motorIndices)
-    #     return 6  #position x,y,z and roll/pitch/yaw euler angles of end effector
+        for i in range(len(self.motorIndices)):
+            p.resetJointState(self.kukaUid, self.motorIndices[i], self.cur_q[i])
+
+        self.controlMode = "JOINT_IMPEDANCE_CONTROL"
+        self.setControlMode(self.controlMode)
+
+    def getDoFSize(self):
+        return len(self.motorIndices)
 
     def getMotorIndices(self):
         return self.motorIndices
@@ -100,38 +96,29 @@ class KukaIIWA:
         return self.kukaUid
 
     def getObservation(self):
-        # observation = []
+        observation = []
         # state = p.getLinkState(self.kukaUid, self.kukaGripperIndex)
         # p.getJointStates()
         # pos = state[0]
         # orn = state[1]
         # euler = p.getEulerFromQuaternion(orn)
 
-        # observation.extend(list(pos))
+        # observation.extend(list(pos)) # extend just adds into the same list
         # observation.extend(list(euler))
+
+        # JOINT STATES
         joint_states = p.getJointStates(self.kukaUid, self.motorIndices)
+        for j in range(len(joint_states)):
+            js = joint_states[j]
+            self.cur_q[j] = js[0]
+            self.cur_qdot[j] = js[1]
+            self.cur_rF[j] = js[2]
+            self.cur_eF[j] = js[3]
 
-        # Print Debug Stuff for Joint 0
-        # js_0 = joint_states[0]
-        # print("len(js_0) " + str(len(js_0)))
-        # q_0 = js_0[0]
-        # print("q_0 " + str(q_0))
-        # qd_0 = js_0[1]
-        # print("qd_0 " + str(qd_0))
-        # For Force Sensor
-        # jointReactionForces_0 = js_0[2]
-        # appliedJointMotorTorque_0 = js_0[3]
-        # print("appliedJointMotorTorque_0 " + str(appliedJointMotorTorque_0))
-        # q_pos[0][i] = joint_states[0][0]
-        # a = joint_states[1][0]
-        # print("joint_states[1][0] = " + str(joint_states[1][0]))
-        # q_pos[1][i] = a
+        observation.append(list(self.cur_q))
+        observation.append(list(self.cur_qdot))
 
-        # q_vel[0][i] = joint_states[0][1]
-        # q_vel[1][i] = joint_states[1][1]
-
-        
-        return joint_states
+        return observation
 
     def getInertiaMatrix(self):
         # Controller with MassMatrix
@@ -139,7 +126,7 @@ class KukaIIWA:
         # https://github.com/bulletphysics/bullet3/blob/0aaae872451a69d0c93b0c8ed818667de4ad5653/examples/pybullet/gym/pybullet_utils/pd_controller_stable.py
         
         # of EEF
-        dyn = p.getDynamicsInfo(self.kukaUid, -1)
+        dyn = p.getDynamicsInfo(self.kukaUid, -1) # TODO -1 seems to be wrong! Because it refersa to the base!
         print("dyn = " + str(dyn))
         mass = dyn[0]
         friction = dyn[1]
@@ -152,7 +139,13 @@ class KukaIIWA:
     def setControlMode(self, controlMode):
         # TODO use ENUM not String here
         if controlMode == "JOINT_IMPEDANCE_CONTROL":
-            pass
+            # TODO set kp and kd
+            p.setJointMotorControlArray(self.kukaUid,
+                                        self.motorIndices,
+                                        p.POSITION_CONTROL,
+                                        targetPositions=self.cur_q)
+            # TODO PERHAPS ADD MAX FORCES!
+            self.controlMode = controlMode
         if controlMode == "JOINT_TORQUE_CONTROL":
             # # Disable the motors first
             # Disable the motors for torque control:
@@ -161,8 +154,6 @@ class KukaIIWA:
                                         p.VELOCITY_CONTROL,
                                         forces=self.zeroForces)
             self.controlMode = controlMode
-        if controlMode == "CARTESIAN_IMPEDANCE_CONTROL":
-            pass
 
     def setCommand(self, motorCommands):
         if self.controlMode == "JOINT_TORQUE_CONTROL":
@@ -284,12 +275,68 @@ class KukaIIWA:
     #                                     targetPosition=motorCommands[action],
     #                                     force=self.maxForce)
 
+    # def getPartialDerivativeHybrid(self, bs_J_ee, joint_idx, column_idx):
+    #     ''' Inspired by http://docs.ros.org/kinetic/api/orocos_kdl/html/chainjnttojacdotsolver_8cpp_source.html
+    #     const Twist& ChainJntToJacDotSolver::getPartialDerivativeHybrid(const KDL::Jacobian& bs_J_ee,
+    #                                                               const unsigned int& joint_idx,
+    #                                                               const unsigned int& column_idx)
+    #     '''
+    #     j = joint_idx
+    #     i = column_idx
+
+    #     jac_j_ = bs_J_ee[:,j]
+    #     jac_i_ = bs_J_ee[:,i]
+
+    #     # SetToZero(t_djdq_);
+    #     # TWIST vel and rot
+    #     t_djdq_ = []
+
+    #     if j < i:
+    #         # P_{\Delta}({}_{bs}J^{j})  ref (20)
+    #         t_djdq_.append(list(jac_j_.rot * jac_i_.vel)) # TODO
+    #         t_djdq_.rot = jac_j_.rot * jac_i_.rot
+    #     elif j > i:
+    #         # M_{\Delta}({}_{bs}J^{j})  ref (23)
+    #         SetToZero(t_djdq_.rot)
+    #         t_djdq_.vel = -jac_j_.vel * jac_i_.rot
+    #     elif j == i:
+    #         #ref (40)
+    #         SetToZero(t_djdq_.rot)
+    #         t_djdq_.vel = jac_i_.rot * jac_i_.vel
+        
+    #     return t_djdq_
+
+    # def getJacDot(self, qdot, jac, motor_indicies):
+    #     segmentNr = len(motor_indicies)
+
+    #     # Initialize Jacobian to zero since only segmentNr columns are computed
+    #     Jdot = np.zeros([6, segmentNr])
+
+    #     # First compute the jacobian in the Hybrid representation
+    #     jac_ = jac
+
+    #     # Let's compute Jdot in the corresponding representation
+    #     k = 0
+    #     jac_dot_k_ = np.zeros([6]) # TODO???
+
+    #     for i in range(segmentNr):
+    #         # Only increase joint nr if the segment has a joint, assume that fixed are already removed from the motor list
+    #         for j in range(segmentNr):
+    #             # Column J is the sum of all partial derivatives ref (41)
+    #             jac_dot_k_ += getPartialDerivative(jac_, j, k) * qdot[j];
+                
+    #         k = k + 1
+    #         jdot.setColumn(k, jac_dot_k_);
+    #         jac_dot_k_ = np.zeros([6]) # TODO???
+
+    #     return Jdot
+
 class KukaIIWA7(KukaIIWA):
-    def __init__(self, urdfRootPath=gym_flexassembly.data.getDataPath(), timeStep=0.01):
-        KukaIIWA.__init__(self, urdfRootPath=gym_flexassembly.data.getDataPath(), timeStep=0.01, variant='7')
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
+        KukaIIWA.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='7')
 
 class KukaIIWA14(KukaIIWA):
-    def __init__(self, urdfRootPath=gym_flexassembly.data.getDataPath(), timeStep=0.01):
-        KukaIIWA.__init__(self, urdfRootPath=gym_flexassembly.data.getDataPath(), timeStep=0.01, variant='14')
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
+        KukaIIWA.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='14')
 
 __all__ = ['KukaIIWA7', 'KukaIIWA14']

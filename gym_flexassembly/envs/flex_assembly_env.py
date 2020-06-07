@@ -223,6 +223,9 @@ class FlexAssemblyEnv(gym.Env):
 
         # self._observation = self.getExtendedObservation()
 
+        self.kuka7_1.getObservation()
+        print("\n\n")
+
         self._p.stepSimulation()
         if self._gui:
             time.sleep(self._timeStep) # TODO DLW

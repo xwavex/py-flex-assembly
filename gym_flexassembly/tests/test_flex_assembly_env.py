@@ -6,6 +6,9 @@ import time
 
 import signal
 
+import rospy
+
+
 
 def main():
 

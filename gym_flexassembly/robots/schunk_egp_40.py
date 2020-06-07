@@ -9,11 +9,12 @@ import math
 from gym_flexassembly import data as flexassembly_data
 
 class SchunkEGP40:
-    def __init__(self, connect_to_loaded_model_id=-1, urdfRootPath=flexassembly_data.getDataPath(), use_inertia_from_urdf=False):
+    def __init__(self, connect_to_loaded_model_id=-1, connect_to_start_link=-1, urdfRootPath=flexassembly_data.getDataPath(), use_inertia_from_urdf=False):
         self._urdfRoot_flexassembly = urdfRootPath
 
         self._model_id = -1
         self._connect_to_loaded_model_id = connect_to_loaded_model_id
+        self._connect_to_start_link = connect_to_start_link
         if self._connect_to_loaded_model_id > 0:
             self._model_id = connect_to_loaded_model_id
         

@@ -29,6 +29,7 @@ from gym_flexassembly import data as flexassembly_data
 
 # FLEX ASSEMBLY ROBOT IMPORTS
 from gym_flexassembly.robots.kuka_iiwa import KukaIIWA, KukaIIWA7, KukaIIWA14
+from gym_flexassembly.robots.kuka_iiwa_egp_40 import KukaIIWA_EGP40, KukaIIWA7_EGP40
 
 # FLEX ASSEMBLY SMARTOBJECTS IMPORTS
 from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
@@ -123,7 +124,7 @@ class FlexAssemblyEnv(gym.Env):
         # Disable rendering
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
 
-        self.kuka7_1 = KukaIIWA7()
+        self.kuka7_1 = KukaIIWA7_EGP40()
         self._p.resetBasePositionAndOrientation(self.kuka7_1.getUUid(), [0,-0.2,0.5], [0,0,0,1])
         collisionFilterGroup_kuka = 0x10
         collisionFilterMask_kuka = 0x1

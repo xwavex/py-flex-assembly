@@ -1,0 +1,54 @@
+# ============================================================
+#
+# This file is a part of CoSiMA (CogIMon) project
+#
+# Copyright (C) 2020 by Dennis Leroy Wigand <dwigand@techfak.uni-bielefeld.de>
+#
+# This file may be licensed under the terms of the
+# GNU Lesser General Public License Version 3 (the ``LGPL''),
+# or (at your option) any later version.
+#
+# Software distributed under the License is distributed
+# on an ``AS IS'' basis, WITHOUT WARRANTY OF ANY KIND, either
+# express or implied. See the LGPL for the specific language
+# governing rights and limitations.
+#
+# You should have received a copy of the LGPL along with this
+# program. If not, go to http://www.gnu.org/licenses/lgpl.html
+# or write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# The development of this software was supported by:
+#   CoR-Lab, Research Institute for Cognition and Robotics
+#     Bielefeld University
+#
+# ============================================================
+
+# Load the lib.
+import("cosima-robot-sim")
+# Load the robot interface.
+loadComponent("robot","cosima::RTTRobotManipulatorSim")
+# Set the desired update rate (0.001 ms = 1 Kz).
+setActivity("robot",0.0001,10,ORO_SCHED_OTHER)
+# Connect to the simulator of choice.
+# Currently, gazebo and bullet are supported.
+# When chosing bullet, make sure to run a bullet Shared Memory server in preface.
+# e.g.,
+# client = p.connect(p.GUI_SERVER)
+# p.setGravity(0, 0, -9.81, physicsClientId=client)
+# 
+# While gazebo updates the simulator indepedent of the chosen update rate,
+# bullet will be in-sync with the chosen update rate.
+# Of course only if it is doable for bullet's calculations.
+robot.connectBullet()
+# Spawn a robot in the bullet simulator.
+robot.spawnRobot("kuka1", "/home/dwigand/code/cogimon/CoSimA/pyBullet/pyCompliantInteractionPlanning/gym_flexassembly/data/kuka-iiwa-7/model.urdf", "bullet")
+# (Optionally) spawn multiple robots.
+# ...
+# Configure the robots and create the necessary OROCOS RTT ports.
+robot.configure()
+# Choose a desired control mode: (JointGravComp, JointTorqueCtrl, JointPositionCtrl).
+# This can also be changed during runtime.
+robot.setControlMode("kuka1", "JointGravComp")
+# Start the component to exchange data with OROCOS RTT and the simulators.
+robot.start()

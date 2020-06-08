@@ -8,14 +8,20 @@ import signal
 
 # import rospy
 
-
+import pybullet as p
 
 def main():
 
-    environment = FlexAssemblyEnv()
+    environment = FlexAssemblyEnv(stepping=False)
 
-    while(1):
-        environment.step([])
+    # Disable realtime
+    p.setRealTimeSimulation(0)
+    # Chose step width
+    p.setTimeStep(0.001) # TODO Chose the right number that matches with OROCOS RTT
+
+
+    # while(1):
+    #     environment.step([])
 
     # done = False
     # while (not done):

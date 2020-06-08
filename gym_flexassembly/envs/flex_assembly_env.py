@@ -38,7 +38,9 @@ class FlexAssemblyEnv(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
     def __init__(self,
+               stepping=True,
                gui=True):
+        self._stepping = stepping
         self._timeStep = 1.0 / 1000.0
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
         self._urdfRoot_flexassembly = flexassembly_data.getDataPath()
@@ -57,7 +59,7 @@ class FlexAssemblyEnv(gym.Env):
 
         self._p = p
         if self._gui:
-            self._client_id = self._p.connect(self._p.GUI, options='--background_color_red=1.0 --background_color_green=1.0 --background_color_blue=1.0')
+            self._client_id = self._p.connect(self._p.GUI_SERVER, options='--background_color_red=1.0 --background_color_green=1.0 --background_color_blue=1.0')
             # self._p.resetDebugVisualizerCamera(1.3, 180, -41, [0.52, -0.2, -0.33])
         else:
             self._client_id = self._p.connect(self._p.SHARED_MEMORY_SERVER)
@@ -149,7 +151,7 @@ class FlexAssemblyEnv(gym.Env):
         # TODO how to delete all elements in preface?
 
         self.loadEnvironment()
-        self.loadRobot()
+        # self.loadRobot()
 
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "plane.urdf"), [0, 0, -1])
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "table/table.urdf"), 0.5000000, 0.00000, -.820000,
@@ -224,16 +226,17 @@ class FlexAssemblyEnv(gym.Env):
 
         # self._observation = self.getExtendedObservation()
 
-        self.kuka7_1.getObservation()
-        print("\n\n")
+        # self.kuka7_1.getObservation()
 
-        self._p.stepSimulation()
+        if self._stepping:
+            self._p.stepSimulation()
         if self._gui:
             time.sleep(self._timeStep) # TODO DLW
 
         done = self._termination()
 
-        return np.array(self._observation), done, {}
+        # return np.array(self._observation), done, {}
+        return
 
     def render(self, mode="rgb_array", close=False):
         if mode != "rgb_array":

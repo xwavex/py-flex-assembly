@@ -26,6 +26,9 @@ import signal
 from gym_flexassembly import data as flexassembly_data
 
 from gym_flexassembly.envs.env_interface import EnvInterface
+
+# FLEX ASSEMBLY SMARTOBJECTS IMPORTS
+from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
         
 
 class ROSCommManager(object):
@@ -49,6 +52,8 @@ class ROSCommManager(object):
 
         service_add_object_urdf = rospy.Service('add_object_urdf', AddObjectURDF, self.add_object_urdf)
 
+        service_add_object_urdf = rospy.Service('add_smart_object', AddObjectURDF, self.add_smart_object)
+
         service_set_auto_stepping = rospy.Service('set_auto_stepping', BiBo, self.set_auto_stepping)
 
         service_add_constraint = rospy.Service('add_constraint', AddConstraint, self.add_constraint)
@@ -59,12 +64,12 @@ class ROSCommManager(object):
         #     ROSCommManager.manager_instances_[self._sim_id] = self
         print("ROSCommManager started")
 
-        rate = rospy.Rate(100) # 100hz
+        rate = rospy.Rate(1000) # 1000hz
         while not rospy.is_shutdown():
             if self._env != None:
                 self._env.handle_input_events()
                 # self._env.step_sim()
-                self._p.stepSimulation()    
+                self._p.stepSimulation()
             rate.sleep()
 
 
@@ -83,13 +88,40 @@ class ROSCommManager(object):
         """ Add an object to the simulator via urdf
         """
         # Disable rendering
-        self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
+        # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
         # object
+        print("Trying to add object with fixed base " + str(req.fixed_base))
         object_id = self._p.loadURDF(req.urdf_file_name, useFixedBase=req.fixed_base, flags = self._p.URDF_USE_INERTIA_FROM_FILE)
-        self._p.resetBasePositionAndOrientation(object_id, [req.position_offset_from_world.x, req.position_offset_from_world.y, req.position_offset_from_world.z], [req.orientation_offset_from_world.x,req.orientation_offset_from_world.y,req.orientation_offset_from_world.z,req.orientation_offset_from_world.w])
+        self._p.resetBasePositionAndOrientation(object_id, [req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], [req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
         # Enable rendering again
-        self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
-        return object_id
+        # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
+
+        # table_offset_world_x = -0.85
+        # table_offset_world_y = 0
+        # table_offset_world_z = 0
+        
+        # workpiece_1_offset_table_x = 0.60
+        # workpiece_1_offset_table_y = 0.20
+        # workpiece_1_offset_table_z = 0.75
+        # workpiece_1_offset_world = [table_offset_world_x + workpiece_1_offset_table_x, table_offset_world_y + workpiece_1_offset_table_y, table_offset_world_z + workpiece_1_offset_table_z]
+        # workpiece_1 = SpringClamp(pos=workpiece_1_offset_world)
+
+    def add_smart_object(self, req):
+        """ Add a smart object to the simulator
+        """
+        # Disable rendering
+        # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
+        # object
+
+        if req.urdf_file_name == "SpringClamp":
+            print("Trying to add smart object " + str(req.urdf_file_name))
+            sObject = SpringClamp(pos=[req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
+        # Enable rendering again
+        # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
+
+        # TODO we need a manager that takes care of storing this thing!!!
+
+        return sObject.getModelId()
 
     def set_auto_stepping(self, req):
         """ Activate or deactivate auto_stepping

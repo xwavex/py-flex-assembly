@@ -1,7 +1,6 @@
 import numpy as np
 
-# from gym_flexassembly.utils import transformations
-from utils import transformations
+from gym_flexassembly.utils import transformations
 
 class ForceConstraint(object):
     """ TODO

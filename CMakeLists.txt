@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  cosima_world_state
+  # message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -53,11 +55,10 @@ find_package(catkin REQUIRED COMPONENTS
 #   Message2.msg
 # )
 
-## Generate services in the 'srv' folder
+# # Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
-#   Service1.srv
-#   Service2.srv
+#   AddConstraint.srv
 # )
 
 ## Generate actions in the 'action' folder
@@ -67,7 +68,7 @@ find_package(catkin REQUIRED COMPONENTS
 #   Action2.action
 # )
 
-## Generate added messages and services with any dependencies listed here
+# # Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
 #   std_msgs
@@ -107,6 +108,7 @@ catkin_package(
 #  LIBRARIES pytorch_test
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
+  # CATKIN_DEPENDS message_runtime
 )
 
 ###########

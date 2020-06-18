@@ -59,6 +59,18 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
+  <build_depend>cosima_world_state</build_depend>
+  <build_export_depend>cosima_world_state</build_export_depend>
+  <exec_depend>cosima_world_state</exec_depend>
+
+  
+
+  <!-- <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <build_depend>genjava</build_depend> -->
+  <!-- genjava_message_artifacts - -verbose -p py_flex_assembly -->
+
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

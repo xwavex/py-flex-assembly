@@ -1,18 +1,18 @@
 import numpy as np
 import os
 
-# import gym_flexassembly.data as data
-import data
+import gym_flexassembly.data as data
 
 class Frame(object):
     """ TODO
     """
 
-    def __init__(self, pb, text):
+    def __init__(self, pb, text, fixed_base=True, ref_id=-1):
         self.p = pb
         self.text = text
+        self.ref_id = ref_id
         urdfRootPath = data.getDataPath()
-        self.frame_ghost_id = self.p.loadURDF(os.path.join(urdfRootPath, "frame_full.urdf"), useFixedBase=True)
+        self.frame_ghost_id = self.p.loadURDF(os.path.join(urdfRootPath, "frame_full.urdf"), useFixedBase=fixed_base)
         self.p.addUserDebugLine([0, 0, 0], [0.1, 0, 0], [1, 0, 0], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)
         self.p.addUserDebugLine([0, 0, 0], [0, 0.1, 0], [0, 1, 0], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)
         self.p.addUserDebugLine([0, 0, 0], [0, 0, 0.1], [0, 0, 1], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)
@@ -44,6 +44,9 @@ class Frame(object):
 
         # enableCollision = 1
         # p.setCollisionFilterPair(planeId, cubeId, -1, -1, enableCollision)
+
+        self.internal_pos = [0,0,0]
+        self.internal_orn = [0,0,0,1]
 
     def updateVisual(self):
         self.p.changeVisualShape(self.frame_ghost_id, 0, rgbaColor=[1, 0, 0, (self.transparency if self.visibility[0] else 0)]) # X
@@ -94,4 +97,18 @@ class Frame(object):
                         replaceItemUniqueId = self.frame_text_node)
 
     def resetPositionAndOrientation(self, pos, orn):
-        self.p.resetBasePositionAndOrientation(self.frame_ghost_id, pos, orn)
+        self.internal_pos = pos
+        self.internal_orn = orn
+
+        if self.ref_id > -1:
+            rpos, rorn = self.p.getBasePositionAndOrientation(self.ref_id)
+            npos, norn = self.p.multiplyTransforms(rpos,rorn,pos,orn)
+            self.p.resetBasePositionAndOrientation(self.frame_ghost_id, npos, norn)
+        else:
+            self.p.resetBasePositionAndOrientation(self.frame_ghost_id, pos, orn)
+
+    def getInternalPosOrn(self):
+        return self.internal_pos, self.internal_orn
+
+    def getRefId(self):
+        return self.ref_id

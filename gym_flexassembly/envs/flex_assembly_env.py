@@ -34,35 +34,30 @@ from gym_flexassembly.robots.kuka_iiwa_egp_40 import KukaIIWA_EGP40, KukaIIWA7_E
 # FLEX ASSEMBLY SMARTOBJECTS IMPORTS
 from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
 
-class FlexAssemblyEnv(gym.Env):
+from gym_flexassembly.envs.env_interface import EnvInterface
+
+class FlexAssemblyEnv(EnvInterface):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
     def __init__(self,
                stepping=True,
                gui=True):
+        super().__init__(gui)
+
         self._stepping = stepping
         self._timeStep = 1.0 / 1000.0
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
         self._urdfRoot_flexassembly = flexassembly_data.getDataPath()
         # self._observation = []
         # self._envStepCounter = 0
-        self._gui = gui
         self._terminated = False
         # self._cam_dist = 1.3
         # self._cam_yaw = 180
         # self._cam_pitch = -40
-        self._client_id = -1;
 
         self.largeValObservation = 100 # TODO
         self.RENDER_HEIGHT = 720 # TODO
         self.RENDER_WIDTH = 960 # TODO
-
-        self._p = p
-        if self._gui:
-            self._client_id = self._p.connect(self._p.GUI_SERVER, options='--background_color_red=1.0 --background_color_green=1.0 --background_color_blue=1.0')
-            # self._p.resetDebugVisualizerCamera(1.3, 180, -41, [0.52, -0.2, -0.33])
-        else:
-            self._client_id = self._p.connect(self._p.SHARED_MEMORY_SERVER)
 
 
         self.seed()
@@ -228,10 +223,7 @@ class FlexAssemblyEnv(gym.Env):
 
         # self.kuka7_1.getObservation()
 
-        if self._stepping:
-            self._p.stepSimulation()
-        if self._gui:
-            time.sleep(self._timeStep) # TODO DLW
+        super().step_sim()
 
         done = self._termination()
 

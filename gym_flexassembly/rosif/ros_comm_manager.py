@@ -60,18 +60,28 @@ class ROSCommManager(object):
 
         service_add_frame = rospy.Service('add_frame', AddFrame, self.add_frame)
 
+        service_run_simulation = rospy.Service('run_simulation', BiBo, self.run_simulation)
+
         # with ROSCommManager.manager_instances_lock_:
         #     ROSCommManager.manager_instances_[self._sim_id] = self
         print("ROSCommManager started")
 
+        self.run = False
+
         rate = rospy.Rate(1000) # 1000hz
         while not rospy.is_shutdown():
-            if self._env != None:
+            if self._env != None and self.run:
                 self._env.handle_input_events()
                 # self._env.step_sim()
                 self._p.stepSimulation()
             rate.sleep()
 
+    def run_simulation(self, req):
+        """ Trigger to continuously run the simulator
+        """
+        print("Run the simulator continuously!")
+        self.run = True
+        return self.run
 
     def launch_sim(self, req):
         """ Initialize the simulator or connect to an existing one.

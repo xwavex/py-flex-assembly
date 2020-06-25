@@ -6,16 +6,16 @@ import numpy as np
 import math
 
 try:
-    from .robots import KukaIIWA7
+    from gym_flexassembly.robots import KukaIIWA7
 except (ImportError, SystemError):
     from robots import KukaIIWA7
 
 try:
-    from .controller import JointGravityCompensationController, JointPDController, OperationalSpaceController
+    from gym_flexassembly.controller import JointGravityCompensationController, JointPDController, OperationalSpaceController
 except (ImportError, SystemError):
     from controller import JointGravityCompensationController, JointPDController, OperationalSpaceController
 
-import data
+import gym_flexassembly.data as data
 urdfRootPath = data.getDataPath()
 
 import os

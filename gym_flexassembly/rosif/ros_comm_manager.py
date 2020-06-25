@@ -17,6 +17,7 @@ from cosima_world_state.srv import AddConstraint, AddConstraintResponse
 from cosima_world_state.srv import LaunchSim, LaunchSimResponse
 from cosima_world_state.srv import AddObjectURDF, AddObjectURDFResponse
 from cosima_world_state.srv import BiBo, BiBoResponse
+# from cosima_world_state.srv import AddMultiBody, AddMultiBodyResponse
 
 # import threading
 
@@ -32,7 +33,7 @@ from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
         
 
 class ROSCommManager(object):
-    """ TODO
+    """ DLW TODO
     """
 
     # # Static dict to track instances
@@ -51,6 +52,8 @@ class ROSCommManager(object):
         service_launch_sim = rospy.Service('launch_sim', LaunchSim, self.launch_sim)
 
         service_add_object_urdf = rospy.Service('add_object_urdf', AddObjectURDF, self.add_object_urdf)
+
+        # service_add_multibody = rospy.Service('add_multibody', AddMultiBody, self.add_multibody)
 
         service_add_object_urdf = rospy.Service('add_smart_object', AddObjectURDF, self.add_smart_object)
 
@@ -103,6 +106,22 @@ class ROSCommManager(object):
         print("Trying to add object with fixed base " + str(req.fixed_base))
         object_id = self._p.loadURDF(req.urdf_file_name, useFixedBase=req.fixed_base, flags = self._p.URDF_USE_INERTIA_FROM_FILE)
         self._p.resetBasePositionAndOrientation(object_id, [req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], [req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
+        
+        # Disable motors
+        for j in range(self._p.getNumJoints(object_id)):
+            ji = self._p.getJointInfo(object_id, j)
+            jointType = ji[2]
+            if (jointType == self._p.JOINT_SPHERICAL):
+                # print("Joint "+str(j)+" as JOINT_SPHERICAL")
+                self._p.setJointMotorControlMultiDof(object_id, j, self._p.POSITION_CONTROL, targetPosition=[0, 0, 0, 1], targetVelocity=[0,0,0], positionGain=0, velocityGain=1, force=[0,0,0])
+                self._p.setJointMotorControlMultiDof(object_id, j, self._p.TORQUE_CONTROL, force=[0,0,0])
+            elif (jointType==self._p.JOINT_PRISMATIC or jointType==self._p.JOINT_REVOLUTE):
+                # print("Joint "+str(j)+" as JOINT_PRISMATIC or JOINT_REVOLUTE")
+                self._p.setJointMotorControl2(object_id, j, self._p.VELOCITY_CONTROL, targetVelocity=0, force=0)
+                self._p.setJointMotorControl2(object_id, j, self._p.TORQUE_CONTROL, force=0.0)
+            else:
+                print("Joint Type " + str(jointType) + " is not yet supported!")
+        
         # Enable rendering again
         # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 
@@ -115,6 +134,31 @@ class ROSCommManager(object):
         # workpiece_1_offset_table_z = 0.75
         # workpiece_1_offset_world = [table_offset_world_x + workpiece_1_offset_table_x, table_offset_world_y + workpiece_1_offset_table_y, table_offset_world_z + workpiece_1_offset_table_z]
         # workpiece_1 = SpringClamp(pos=workpiece_1_offset_world)
+
+    # def add_multibody(self, req):
+    #     """ Add an object to the simulator
+    #     """
+    #     visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH,
+    #                                 fileName=req.visual_mesh_file_name,
+    #                                 rgbaColor=[1, 1, 1, 1],
+    #                                 specularColor=[0.4, .4, 0],
+    #                                 visualFramePosition=[0,0,0],
+    #                                 meshScale=[1,1,1])
+    #     collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH,
+    #                                       fileName=req.collision_mesh_file_name,
+    #                                       collisionFramePosition=[0,0,0],
+    #                                       meshScale=[1,1,1])
+
+    #     schunk = p.createMultiBody(baseMass=0.6,
+    #                     baseInertialFramePosition=[0.00078059, -0.00070996, 0.04726637],
+    #                     baseCollisionShapeIndex=collisionShapeId,
+    #                     baseVisualShapeIndex=visualShapeId,
+    #                     basePosition=[0,0,0.5],
+    #                     useMaximalCoordinates=False
+
+    #     object_id = self._p.loadURDF(req.urdf_file_name, useFixedBase=req.fixed_base, flags = self._p.URDF_USE_INERTIA_FROM_FILE)
+    #     self._p.resetBasePositionAndOrientation(object_id, [req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], [req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
+        
 
     def add_smart_object(self, req):
         """ Add a smart object to the simulator

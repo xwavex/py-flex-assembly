@@ -5,9 +5,9 @@ import time
 import math
 import numpy as np
 
-import data
+import gym_flexassembly.data as data
 
-from constraints import frame
+from gym_flexassembly.constraints import frame
 
 
 def getRayFromTo(mouseX, mouseY):
@@ -173,6 +173,22 @@ ux = p.addUserDebugLine([0, 0, 0], [0,0,0], [0.3, 0.3, 0.3], 2)
 uy = p.addUserDebugLine([0, 0, 0], [0,0,0], [0.3, 0.3, 0.3], 2)
 uz = p.addUserDebugLine([0, 0, 0], [0,0,0], [0.3, 0.3, 0.3], 2)
 count_draw = 0
+
+
+print(p.getDynamicsInfo(schunk, -1))
+p.changeDynamics(schunk, 0, mass=0.0)
+print(p.getDynamicsInfo(schunk, 0))
+p.changeDynamics(schunk, 1, mass=0.0)
+print(p.getDynamicsInfo(schunk, 1))
+p.changeDynamics(schunk, 2, mass=0.0)
+print(p.getDynamicsInfo(schunk, 2))
+print(p.getDynamicsInfo(schunk, 3))
+p.changeDynamics(schunk, 4, mass=0.0)
+print(p.getDynamicsInfo(schunk, 4))
+p.changeDynamics(schunk, 5, mass=0.0)
+print(p.getDynamicsInfo(schunk, 5))
+
+# print(p.getDynamicsInfo(schunk, -1))
 while (1):
     numJoints = p.getNumJoints(schunk)
     sphere_js = p.getJointStateMultiDof(schunk, 3)
@@ -192,8 +208,7 @@ while (1):
 
 
     c = np.array(p.calculateInverseDynamics(schunk, q, qdot, zeroAccelerations))
-    # print(c)
-
+    print(c)
     
     p.setJointMotorControl2(schunk,0,p.TORQUE_CONTROL, force=c[0])
     p.setJointMotorControl2(schunk,1,p.TORQUE_CONTROL, force=c[1])

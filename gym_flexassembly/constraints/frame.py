@@ -3,14 +3,18 @@ import os
 
 import gym_flexassembly.data as data
 
+import rospy
+from geometry_msgs.msg import TransformStamped
+
 class Frame(object):
     """ TODO
     """
 
-    def __init__(self, pb, text, fixed_base=True, ref_id=-1):
+    def __init__(self, pb, text, fixed_base=True, ref_name="world", ref_id=-1):
         self.p = pb
         self.text = text
         self.ref_id = ref_id
+        self.ref_name = ref_name
         urdfRootPath = data.getDataPath()
         self.frame_ghost_id = self.p.loadURDF(os.path.join(urdfRootPath, "frame_full.urdf"), useFixedBase=fixed_base)
         self.p.addUserDebugLine([0, 0, 0], [0.1, 0, 0], [1, 0, 0], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)
@@ -47,6 +51,22 @@ class Frame(object):
 
         self.internal_pos = [0,0,0]
         self.internal_orn = [0,0,0,1]
+
+        self.t = TransformStamped()
+        self.t.header.stamp = rospy.Time.now()
+        self.t.header.frame_id = self.ref_name
+        # USE INTERNAL ID AND MAKE UNIQUE?
+        self.t.child_frame_id = self.text
+        self.t.transform.translation.x = self.internal_pos[0]
+        self.t.transform.translation.y = self.internal_pos[1]
+        self.t.transform.translation.z = self.internal_pos[2]
+        self.t.transform.rotation.x = self.internal_orn[0]
+        self.t.transform.rotation.y = self.internal_orn[1]
+        self.t.transform.rotation.z = self.internal_orn[2]
+        self.t.transform.rotation.w = self.internal_orn[3]
+
+    def getROSTransformStamped(self):
+        return self.t
 
     def updateVisual(self):
         self.p.changeVisualShape(self.frame_ghost_id, 0, rgbaColor=[1, 0, 0, (self.transparency if self.visibility[0] else 0)]) # X
@@ -95,6 +115,7 @@ class Frame(object):
                         parentObjectUniqueId=frame_ghost_id,
                         parentLinkIndex=-1,
                         replaceItemUniqueId = self.frame_text_node)
+        # TODO what happend during an update?
 
     def resetPositionAndOrientation(self, pos, orn):
         self.internal_pos = pos
@@ -107,8 +128,19 @@ class Frame(object):
         else:
             self.p.resetBasePositionAndOrientation(self.frame_ghost_id, pos, orn)
 
+        self.t.transform.translation.x = self.internal_pos[0]
+        self.t.transform.translation.y = self.internal_pos[1]
+        self.t.transform.translation.z = self.internal_pos[2]
+        self.t.transform.rotation.x = self.internal_orn[0]
+        self.t.transform.rotation.y = self.internal_orn[1]
+        self.t.transform.rotation.z = self.internal_orn[2]
+        self.t.transform.rotation.w = self.internal_orn[3]
+
     def getInternalPosOrn(self):
         return self.internal_pos, self.internal_orn
 
     def getRefId(self):
         return self.ref_id
+
+    def getName(self):
+        return self.text

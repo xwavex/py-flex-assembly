@@ -10,6 +10,9 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 
+import tf2_ros
+from geometry_msgs.msg import TransformStamped
+
 import os
 
 from cosima_world_state.srv import AddFrame, AddFrameResponse
@@ -65,6 +68,9 @@ class ROSCommManager(object):
 
         service_run_simulation = rospy.Service('run_simulation', BiBo, self.run_simulation)
 
+        # FRAME BROADCASTER
+        self._fb = tf2_ros.TransformBroadcaster()
+
         # with ROSCommManager.manager_instances_lock_:
         #     ROSCommManager.manager_instances_[self._sim_id] = self
         print("ROSCommManager started")
@@ -91,7 +97,7 @@ class ROSCommManager(object):
         """
         if self._sim_id == -1:
             print("ROSCommManager launching simulator")
-            self._env = EnvInterface()
+            self._env = EnvInterface(ros_frame_broadcaster=self._fb)
             self._sim_id = self._env.get_client_id()
         print("ROSCommManager connected to simulator " + str(self._sim_id))
         # TODO check if self._env in this case is not None!

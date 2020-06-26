@@ -29,7 +29,7 @@ from gym_flexassembly.constraints import frame_manager
 class EnvInterface(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
-    def __init__(self, gui=True):
+    def __init__(self, gui=True, ros_frame_broadcaster=None):
         self._client_id = -1;
 
         self._timeStep = 1.0 / 1000.0
@@ -42,6 +42,8 @@ class EnvInterface(gym.Env):
 
         self._cm = None
         self._fm = None
+
+        self._fb = ros_frame_broadcaster
 
         if self._gui:
             self._client_id = self._p.connect(self._p.GUI_SERVER, options='--background_color_red=1.0 --background_color_green=1.0 --background_color_blue=1.0')
@@ -63,8 +65,8 @@ class EnvInterface(gym.Env):
         self.setup_manager()
 
     def setup_manager(self):
-        # self._cm = constraint_manager.ConstraintManager(self._p)
-        self._fm = frame_manager.FrameManager(self._p)
+        self._cm = constraint_manager.ConstraintManager(self._p)
+        self._fm = frame_manager.FrameManager(self._p, self._fb)
 
     def getFrameManager(self):
         return self._fm

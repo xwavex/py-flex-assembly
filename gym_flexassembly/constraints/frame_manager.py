@@ -5,6 +5,9 @@ import math
 
 import pybullet as pb
 
+import tf2_ros
+from geometry_msgs.msg import TransformStamped
+
 from gym_flexassembly.constraints import frame
 
 from pyquaternion import Quaternion
@@ -13,7 +16,7 @@ class FrameManager(object):
     """ TODO
     """
 
-    def __init__(self, pb):
+    def __init__(self, pb, frame_broadcaster=None):
         self.p = pb
         # s[i]=j
         self.frame_id_storage = {}
@@ -24,13 +27,23 @@ class FrameManager(object):
 
         self.selectedFrame = None
 
+        self.fb = frame_broadcaster
+
     def createFrame(self, name, pos=[0,0,0], orn=[0,0,0,1], ref_id=-1):
-        tmp_frame = frame.Frame(self.p, name, fixed_base=True, ref_id=ref_id)
+        tmp_frame = None
+        if ref_id > -1:
+            tmp_frame = frame.Frame(self.p, name, fixed_base=True, ref_id=ref_id, ref_name=self.frame_id_storage[ref_id].getName())
+        else:
+            tmp_frame = frame.Frame(self.p, name, fixed_base=True)
         self.frame_id_storage[tmp_frame.getFrameId()]=tmp_frame
         print("createFrame with " + str(name) + " at " + str(pos) + " and " + str(orn) + " : " + str(tmp_frame.getFrameId()) + " at ref: " + str(ref_id))
 
         self.recalculateFrameDependency()
         tmp_frame.resetPositionAndOrientation(pos, orn)
+
+        if self.fb:
+            self.fb.sendTransform(tmp_frame.getROSTransformStamped())
+
         # TODO avoid douplings
         self.updateFramePoses()
 

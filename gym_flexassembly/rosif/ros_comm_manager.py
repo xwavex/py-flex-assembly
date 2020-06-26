@@ -33,7 +33,9 @@ from gym_flexassembly.envs.env_interface import EnvInterface
 
 # FLEX ASSEMBLY SMARTOBJECTS IMPORTS
 from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
-        
+
+from gym_flexassembly.constraints.maxwell_constraint import MaxwellConstraint
+
 
 class ROSCommManager(object):
     """ DLW TODO
@@ -67,6 +69,9 @@ class ROSCommManager(object):
         service_add_frame = rospy.Service('add_frame', AddFrame, self.add_frame)
 
         service_run_simulation = rospy.Service('run_simulation', BiBo, self.run_simulation)
+
+        self.debugcount = 0
+        self.debugc = None
 
         # FRAME BROADCASTER
         self._fb = tf2_ros.TransformBroadcaster()
@@ -210,6 +215,12 @@ class ROSCommManager(object):
         
         myid = self._env.getFrameManager().createFrame(req.frame_name, pos=[req.frame_pose.position.x,req.frame_pose.position.y,req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w], ref_id=req.ref_frame_id)
         print("ROSCommManager AddFrameResponse: name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", myid: " + str(myid))
+
+        self.debugcount = self.debugcount + 1
+        if self.debugcount == 3:
+            self.debugc = MaxwellConstraint(self._p, myid, req.ref_frame_id)
+            self.debugc.updateConstraint()
+        
         return myid
 
     # def get_frames(self, req):

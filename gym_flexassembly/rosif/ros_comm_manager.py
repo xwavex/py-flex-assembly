@@ -86,6 +86,8 @@ class ROSCommManager(object):
         while not rospy.is_shutdown():
             if self._env != None and self.run:
                 self._env.handle_input_events()
+
+                self._env.updateConstraints()
                 # self._env.step_sim()
                 self._p.stepSimulation()
             rate.sleep()
@@ -218,8 +220,9 @@ class ROSCommManager(object):
 
         self.debugcount = self.debugcount + 1
         if self.debugcount == 3:
-            self.debugc = MaxwellConstraint(self._p, myid, req.ref_frame_id)
-            self.debugc.updateConstraint()
+            self._env.getConstraintManager().addMaxwellConstraint(myid, req.ref_frame_id)
+            # self.debugc = MaxwellConstraint(self._p, myid, req.ref_frame_id)
+            # self.debugc.updateConstraint()
         
         return myid
 

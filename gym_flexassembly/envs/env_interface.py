@@ -71,6 +71,9 @@ class EnvInterface(gym.Env):
     def getFrameManager(self):
         return self._fm
 
+    def getConstraintManager(self):
+        return self._cm
+
     def get_client_id(self):
         return self._client_id
 
@@ -88,3 +91,7 @@ class EnvInterface(gym.Env):
             self._p.stepSimulation()
         if self._gui:
             time.sleep(self._timeStep)
+
+    def updateConstraints(self):
+        if self._cm:
+            self._cm.updateConstraints()

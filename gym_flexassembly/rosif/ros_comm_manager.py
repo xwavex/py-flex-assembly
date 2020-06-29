@@ -183,6 +183,8 @@ class ROSCommManager(object):
         if req.urdf_file_name == "SpringClamp":
             print("Trying to add smart object " + str(req.urdf_file_name))
             sObject = SpringClamp(pos=[req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
+            # 
+            bbb = self._env.getFrameManager().createFrame("obj1_origin", ref_id=sObject.getModelId(), ref_link_id=-1, is_body_frame=True)
         # Enable rendering again
         # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 

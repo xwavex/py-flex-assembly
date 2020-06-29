@@ -27,12 +27,16 @@ class FrameManager(object):
 
         self.selectedFrame = None
 
-        self.fb = frame_broadcaster
+        # self.fb = frame_broadcaster
 
-    def createFrame(self, name, pos=[0,0,0], orn=[0,0,0,1], ref_id=-1):
+    def createFrame(self, name, pos=[0,0,0], orn=[0,0,0,1], ref_id=-1, ref_link_id=-1, is_body_frame=False):
         tmp_frame = None
         if ref_id > -1:
-            tmp_frame = frame.Frame(self.p, name, fixed_base=True, ref_id=ref_id, ref_name=self.frame_id_storage[ref_id].getName())
+            ref_name_tmp = ""
+            if not is_body_frame:
+                ref_name_tmp = self.frame_id_storage[ref_id].getName()
+        
+            tmp_frame = frame.Frame(self.p, name, fixed_base=True, ref_id=ref_id, ref_link_id=ref_link_id, ref_name=ref_name_tmp, is_body_frame=is_body_frame)
         else:
             tmp_frame = frame.Frame(self.p, name, fixed_base=True)
         self.frame_id_storage[tmp_frame.getFrameId()]=tmp_frame
@@ -41,8 +45,8 @@ class FrameManager(object):
         self.recalculateFrameDependency()
         tmp_frame.resetPositionAndOrientation(pos, orn)
 
-        if self.fb:
-            self.fb.sendTransform(tmp_frame.getROSTransformStamped())
+        # if self.fb:
+        #     self.fb.sendTransform(tmp_frame.getROSTransformStamped())
 
         # TODO avoid douplings
         self.updateFramePoses()
@@ -50,8 +54,10 @@ class FrameManager(object):
         return tmp_frame.getFrameId()
 
     def calculateFrameDependency(self, frame, dep_order):
-        if frame.getRefId() > -1:
-            self.calculateFrameDependency(self.frame_id_storage[frame.getRefId()],dep_order)
+        if not frame.isBodyFrame():
+            # Assume that origin frame is already here and objects can only be positioned with reference to the origin frame for now!
+            if frame.getRefId() > -1:
+                self.calculateFrameDependency(self.frame_id_storage[frame.getRefId()],dep_order)
 
         if frame not in dep_order:
             dep_order.append(frame)

@@ -47,6 +47,16 @@ class SpringClamp:
         # Take care of the spring loaded simulation of the clipping mechanism
         p.setJointMotorControl2(bodyIndex=self._model_id, jointIndex=self._joint_clip_index, controlMode=p.POSITION_CONTROL, targetPosition=self._ul, targetVelocity=0, force=self._max_force)
 
+        # Collision
+        #                      0x010
+        collisionFilterGroup = 0x10
+        #                      0x001
+        collisionFilterMask =  0x1
+
+        p.setCollisionFilterGroupMask(self._model_id, -1, collisionFilterGroup, collisionFilterMask)
+        for i in range(p.getNumJoints(self._model_id)):
+            p.setCollisionFilterGroupMask(self._model_id, i, collisionFilterGroup, collisionFilterMask)
+
     def getMotorIndices(self):
         return self.motorIndices
 

@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import os
 
 import gym_flexassembly.data as data
@@ -18,7 +19,19 @@ class Frame(object):
         self.ref_name = ref_name
         self.is_body_frame = is_body_frame
         urdfRootPath = data.getDataPath()
-        self.frame_ghost_id = self.p.loadURDF(os.path.join(urdfRootPath, "frame_full.urdf"), useFixedBase=fixed_base)
+
+        # calculate scaling
+        scaling = 1.0
+        # Get one time the initial axisaligned bounding box to calculate the size of the frame
+        if is_body_frame:
+            aabbMin, aabbMax = self.p.getAABB(self.ref_id, self.ref_link_id)
+            diff_x = math.fabs(aabbMax[0] - aabbMin[0])
+            diff_y = math.fabs(aabbMax[1] - aabbMin[1])
+            diff_z = math.fabs(aabbMax[2] - aabbMin[2])
+            mid = (((diff_x + diff_y) * 0.5) + diff_z) * 0.5
+            scaling = min(max(mid,0.1),0.5)
+
+        self.frame_ghost_id = self.p.loadURDF(os.path.join(urdfRootPath, "frame_full.urdf"), useFixedBase=fixed_base, globalScaling=scaling)
         self.p.addUserDebugLine([0, 0, 0], [0.1, 0, 0], [1, 0, 0], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)
         self.p.addUserDebugLine([0, 0, 0], [0, 0.1, 0], [0, 1, 0], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)
         self.p.addUserDebugLine([0, 0, 0], [0, 0, 0.1], [0, 0, 1], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)
@@ -120,7 +133,6 @@ class Frame(object):
                         parentObjectUniqueId=frame_ghost_id,
                         parentLinkIndex=-1,
                         replaceItemUniqueId = self.frame_text_node)
-        # TODO what happend during an update?
 
     def resetPositionAndOrientation(self, pos, orn):
         self.internal_pos = pos

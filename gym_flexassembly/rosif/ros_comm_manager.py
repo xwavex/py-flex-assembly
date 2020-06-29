@@ -87,6 +87,8 @@ class ROSCommManager(object):
             if self._env != None and self.run:
                 self._env.handle_input_events()
 
+                self._env.getFrameManager().updateFramePoses()
+
                 self._env.updateConstraints()
                 # self._env.step_sim()
                 self._p.stepSimulation()

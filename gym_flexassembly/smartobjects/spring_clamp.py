@@ -48,10 +48,10 @@ class SpringClamp:
         p.setJointMotorControl2(bodyIndex=self._model_id, jointIndex=self._joint_clip_index, controlMode=p.POSITION_CONTROL, targetPosition=self._ul, targetVelocity=0, force=self._max_force)
 
         # Collision
-        #                      0x010
+        #                      0x10
         collisionFilterGroup = 0x10
-        #                      0x001
-        collisionFilterMask =  0x1
+        #                      0x11
+        collisionFilterMask =  0x11
 
         p.setCollisionFilterGroupMask(self._model_id, -1, collisionFilterGroup, collisionFilterMask)
         for i in range(p.getNumJoints(self._model_id)):

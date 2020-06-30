@@ -153,9 +153,9 @@ class ROSCommManager(object):
 
         # Set collision properly
         # Collision
-        #                      0x010
+        #                      0x10
         collisionFilterGroup = 0x10
-        #                      0x001
+        #                      0x11
         collisionFilterMask =  0x11
 
         p.setCollisionFilterGroupMask(object_id, -1, collisionFilterGroup, collisionFilterMask)

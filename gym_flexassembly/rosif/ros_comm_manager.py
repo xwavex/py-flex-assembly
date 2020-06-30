@@ -68,6 +68,8 @@ class ROSCommManager(object):
 
         service_add_frame = rospy.Service('add_frame', AddFrame, self.add_frame)
 
+        service_add_body_frame = rospy.Service('add_body_frame', AddFrame, self.add_body_frame)
+
         service_run_simulation = rospy.Service('run_simulation', BiBo, self.run_simulation)
 
         self.debugcount = 0
@@ -149,6 +151,7 @@ class ROSCommManager(object):
         # workpiece_1_offset_table_z = 0.75
         # workpiece_1_offset_world = [table_offset_world_x + workpiece_1_offset_table_x, table_offset_world_y + workpiece_1_offset_table_y, table_offset_world_z + workpiece_1_offset_table_z]
         # workpiece_1 = SpringClamp(pos=workpiece_1_offset_world)
+        return object_id
 
     # def add_multibody(self, req):
     #     """ Add an object to the simulator
@@ -185,8 +188,6 @@ class ROSCommManager(object):
         if req.urdf_file_name == "SpringClamp":
             print("Trying to add smart object " + str(req.urdf_file_name))
             sObject = SpringClamp(pos=[req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
-            # 
-            bbb = self._env.getFrameManager().createFrame("obj1_origin", ref_id=sObject.getModelId(), ref_link_id=-1, is_body_frame=True)
         # Enable rendering again
         # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 
@@ -220,7 +221,7 @@ class ROSCommManager(object):
             return -1337
         
         myid = self._env.getFrameManager().createFrame(req.frame_name, pos=[req.frame_pose.position.x,req.frame_pose.position.y,req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w], ref_id=req.ref_frame_id)
-        print("ROSCommManager AddFrameResponse: name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", myid: " + str(myid))
+        print("ROSCommManager add_frame (AddFrameResponse) name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", myid: " + str(myid))
 
         self.debugcount = self.debugcount + 1
         if self.debugcount == 3:
@@ -228,6 +229,14 @@ class ROSCommManager(object):
             # self.debugc = MaxwellConstraint(self._p, myid, req.ref_frame_id)
             # self.debugc.updateConstraint()
         
+        return myid
+
+    def add_body_frame(self, req):
+        if self._env == None:
+            return -1337
+        
+        myid = self._env.getFrameManager().createFrame(req.frame_name, ref_id=req.ref_frame_id, ref_link_id=req.ref_frame_link_id, is_body_frame=True)
+        print("ROSCommManager add_body_frame (AddFrameResponse) name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", myid: " + str(myid))     
         return myid
 
     # def get_frames(self, req):

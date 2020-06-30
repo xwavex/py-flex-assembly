@@ -30,6 +30,7 @@ class FrameManager(object):
         # self.fb = frame_broadcaster
 
     def createFrame(self, name, pos=[0,0,0], orn=[0,0,0,1], ref_id=-1, ref_link_id=-1, is_body_frame=False):
+        print("CREATE FRAME " + str(name) + " ref_id=" + str(ref_id) + " ref_link_id=" + str(ref_link_id) + " is_body_frame=" + str(is_body_frame))
         tmp_frame = None
         if ref_id > -1:
             ref_name_tmp = ""
@@ -39,6 +40,8 @@ class FrameManager(object):
             tmp_frame = frame.Frame(self.p, name, fixed_base=True, ref_id=ref_id, ref_link_id=ref_link_id, ref_name=ref_name_tmp, is_body_frame=is_body_frame)
         else:
             tmp_frame = frame.Frame(self.p, name, fixed_base=True)
+        
+        print("CREATED WITH ID " + str(tmp_frame.getFrameId()))
         self.frame_id_storage[tmp_frame.getFrameId()]=tmp_frame
         print("createFrame with " + str(name) + " at " + str(pos) + " and " + str(orn) + " : " + str(tmp_frame.getFrameId()) + " at ref: " + str(ref_id))
 

@@ -11,7 +11,7 @@ class Frame(object):
     """ TODO
     """
 
-    def __init__(self, pb, text, fixed_base=True, ref_name="world", ref_id=-1, ref_link_id=-1, is_body_frame=False):
+    def __init__(self, pb, text, fixed_base=True, ref_name="world", ref_id=-1, ref_link_id=-1, is_body_frame=False, scale=-1):
         self.p = pb
         self.text = text
         self.ref_id = ref_id
@@ -23,13 +23,15 @@ class Frame(object):
         # calculate scaling
         scaling = 1.0
         # Get one time the initial axisaligned bounding box to calculate the size of the frame
-        if is_body_frame:
+        if is_body_frame and scale <= 0:
             aabbMin, aabbMax = self.p.getAABB(self.ref_id, self.ref_link_id)
             diff_x = math.fabs(aabbMax[0] - aabbMin[0])
             diff_y = math.fabs(aabbMax[1] - aabbMin[1])
             diff_z = math.fabs(aabbMax[2] - aabbMin[2])
             mid = (((diff_x + diff_y) * 0.5) + diff_z) * 0.5
             scaling = min(max(mid,0.1),0.5)
+        elif scale > 0:
+            scaling = scale
 
         self.frame_ghost_id = self.p.loadURDF(os.path.join(urdfRootPath, "frame_full.urdf"), useFixedBase=fixed_base, globalScaling=scaling)
         self.p.addUserDebugLine([0, 0, 0], [0.1, 0, 0], [1, 0, 0], parentObjectUniqueId=self.frame_ghost_id, parentLinkIndex=-1)

@@ -15,6 +15,8 @@ class MaxwellConstraint(object):
         self.target_id = target_id
         self.ref_id = ref_id
 
+        self.constraint_id = -1
+
         self.target_pos = [0,0,0]
         self.ref_pos = [0,0,0]
 
@@ -68,3 +70,9 @@ class MaxwellConstraint(object):
 
     def getRefId(self):
         return self.ref_id
+
+    def setId(self, cid):
+        self.constraint_id = cid
+
+    def getId(self):
+        return self.constraint_id

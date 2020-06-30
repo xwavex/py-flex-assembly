@@ -156,7 +156,7 @@ class ROSCommManager(object):
         #                      0x010
         collisionFilterGroup = 0x10
         #                      0x001
-        collisionFilterMask =  0x1
+        collisionFilterMask =  0x11
 
         p.setCollisionFilterGroupMask(object_id, -1, collisionFilterGroup, collisionFilterMask)
         for i in range(p.getNumJoints(object_id)):
@@ -227,8 +227,11 @@ class ROSCommManager(object):
     #     pass
 
     def add_constraint(self, req):
-        print("ROSCommManager AddConstraintResponse: " + str(req.anchor_id))
-        return AddConstraintResponse(req.anchor_id)
+        # find frame with id
+        f = self._env.getFrameManager.getFrameById(req.target_id)
+        c = self._env.getConstraintManager().addContactConstraint(f, axis=[req.axis_tx,req.axis_ty,req.axis_tz,req.axis_rx,req.axis_ry,req.axis_rz], direction=[req.direction_tx,req.direction_ty,req.direction_tz,req.direction_rx,req.direction_ry,req.direction_rz])
+        print("ROSCommManager add_constraint (AddConstraintResponse) " + str(c.getId()))
+        return c.getId()
 
     def add_frame(self, req):
         if self._env == None:
@@ -240,9 +243,6 @@ class ROSCommManager(object):
         self.debugcount = self.debugcount + 1
         if self.debugcount == 3:
             self._env.getConstraintManager().addMaxwellConstraint(f.getFrameId(), req.ref_frame_id)
-            # self.debugc = MaxwellConstraint(self._p, f.getFrameId(), req.ref_frame_id)
-            # self.debugc.updateConstraint()
-            self._env.getConstraintManager().addContactConstraint(f, axis=[1,1,0,0,0,0])
         
         return f.getFrameId()
 

@@ -12,16 +12,24 @@ class ConstraintManager(object):
 
     def __init__(self, pb):
         self.p = pb
-        self.constraints = []
+        self.constraints_map = {}
+        self.constraint_id_counter = 0
 
     def addMaxwellConstraint(self, target_id, ref_id):
         c = MaxwellConstraint(self.p, target_id, ref_id)
-        self.constraints.append(c)
+        self.constraint_id_counter = self.constraint_id_counter + 1
+        c.setId(self.constraint_id_counter)
+        self.constraints_map[self.constraint_id_counter] = c
+        return c.getId()
 
-    def addContactConstraint(self, target_frame, axis=[1,1,1,1,1,1], bilateral=[1,1,1,1,1,1]):
-        d = ContactConstraint(self.p, axis, target_frame, bilateral=bilateral)
-        self.constraints.append(d)
+    def addContactConstraint(self, target_frame, axis=[1,1,1,1,1,1], direction=[1,1,1,1,1,1]):
+        d = ContactConstraint(self.p, axis, target_frame, direction=direction)
+        self.constraint_id_counter = self.constraint_id_counter + 1
+        d.setId(self.constraint_id_counter)
+        self.constraints_map[self.constraint_id_counter] = d
+        return d.getId()
 
     def updateConstraints(self):
-        for e in self.constraints:
+        for key in self.constraints_map:
+            e = self.constraints_map[key]
             e.updateConstraint()

@@ -70,6 +70,9 @@ class FrameManager(object):
         for entry in self.frame_id_storage:
             self.calculateFrameDependency(self.frame_id_storage[entry], self.frame_dependency_order)
 
+    def getFrameById(self, id):
+        return self.frame_id_storage[id]
+
     def updateFramePoses(self):
         for frame in self.frame_dependency_order:
             pos, orn = frame.getInternalPosOrn()

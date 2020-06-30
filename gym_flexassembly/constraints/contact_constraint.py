@@ -12,11 +12,13 @@ class ContactConstraint(object):
     """ TODO
     """
 
-    def __init__(self, pb, axis, target_frame, bilateral=[1,1,1,1,1,1]):
+    def __init__(self, pb, axis, target_frame, direction=[1,1,1,1,1,1]):
         self.p = pb
         self.target_frame = target_frame
         self.axis = axis
-        self.bilateral = bilateral
+        self.direction = direction
+
+        self.constraint_id = -1
         
         # self.line = self.p.addUserDebugLine(self.ref_pos, self.target_pos, [1, 1, 0], 8)
         # self.frame_text_node = self.p.addUserDebugText(str(self.text), [0, 0.15, 0.15],
@@ -49,3 +51,9 @@ class ContactConstraint(object):
 
     def getTargetFrame(self):
         return self.target_frame
+
+    def setId(self, cid):
+        self.constraint_id = cid
+
+    def getId(self):
+        return self.constraint_id

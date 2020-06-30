@@ -20,6 +20,8 @@ from cosima_world_state.srv import AddConstraint, AddConstraintResponse
 from cosima_world_state.srv import LaunchSim, LaunchSimResponse
 from cosima_world_state.srv import AddObjectURDF, AddObjectURDFResponse
 from cosima_world_state.srv import BiBo, BiBoResponse
+
+from cosima_world_state.msg import MultiBodyIds
 # from cosima_world_state.srv import AddMultiBody, AddMultiBodyResponse
 
 # import threading
@@ -124,10 +126,17 @@ class ROSCommManager(object):
         object_id = self._p.loadURDF(req.urdf_file_name, useFixedBase=req.fixed_base, flags = self._p.URDF_USE_INERTIA_FROM_FILE)
         self._p.resetBasePositionAndOrientation(object_id, [req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], [req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
         
+        ret = MultiBodyIds()
+        ret.id = object_id
+        ret.joint_ids = []
+        ret.joint_names = []
+
         # Disable motors
         for j in range(self._p.getNumJoints(object_id)):
             ji = self._p.getJointInfo(object_id, j)
             jointType = ji[2]
+            ret.joint_ids.append(int(ji[0]))
+            ret.joint_names.append(str(ji[1].decode('UTF-8')))
             if (jointType == self._p.JOINT_SPHERICAL):
                 # print("Joint "+str(j)+" as JOINT_SPHERICAL")
                 self._p.setJointMotorControlMultiDof(object_id, j, self._p.POSITION_CONTROL, targetPosition=[0, 0, 0, 1], targetVelocity=[0,0,0], positionGain=0, velocityGain=1, force=[0,0,0])
@@ -142,16 +151,18 @@ class ROSCommManager(object):
         # Enable rendering again
         # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 
-        # table_offset_world_x = -0.85
-        # table_offset_world_y = 0
-        # table_offset_world_z = 0
-        
-        # workpiece_1_offset_table_x = 0.60
-        # workpiece_1_offset_table_y = 0.20
-        # workpiece_1_offset_table_z = 0.75
-        # workpiece_1_offset_world = [table_offset_world_x + workpiece_1_offset_table_x, table_offset_world_y + workpiece_1_offset_table_y, table_offset_world_z + workpiece_1_offset_table_z]
-        # workpiece_1 = SpringClamp(pos=workpiece_1_offset_world)
-        return object_id
+        # Set collision properly
+        # Collision
+        #                      0x010
+        collisionFilterGroup = 0x10
+        #                      0x001
+        collisionFilterMask =  0x1
+
+        p.setCollisionFilterGroupMask(object_id, -1, collisionFilterGroup, collisionFilterMask)
+        for i in range(p.getNumJoints(object_id)):
+            p.setCollisionFilterGroupMask(object_id, i, collisionFilterGroup, collisionFilterMask)
+
+        return ret
 
     # def add_multibody(self, req):
     #     """ Add an object to the simulator
@@ -193,7 +204,10 @@ class ROSCommManager(object):
 
         # TODO we need a manager that takes care of storing this thing!!!
 
-        return sObject.getModelId()
+        ret = MultiBodyIds()
+        ret.id = sObject.getModelId()
+        print("Added id for smart body " + str(ret.id))
+        return ret
 
     def set_auto_stepping(self, req):
         """ Activate or deactivate auto_stepping
@@ -220,24 +234,25 @@ class ROSCommManager(object):
         if self._env == None:
             return -1337
         
-        myid = self._env.getFrameManager().createFrame(req.frame_name, pos=[req.frame_pose.position.x,req.frame_pose.position.y,req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w], ref_id=req.ref_frame_id)
-        print("ROSCommManager add_frame (AddFrameResponse) name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", myid: " + str(myid))
+        f = self._env.getFrameManager().createFrame(req.frame_name, pos=[req.frame_pose.position.x,req.frame_pose.position.y,req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w], ref_id=req.ref_frame_id)
+        print("ROSCommManager add_frame (AddFrameResponse) name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", f: " + str(f.getFrameId()))
 
         self.debugcount = self.debugcount + 1
         if self.debugcount == 3:
-            self._env.getConstraintManager().addMaxwellConstraint(myid, req.ref_frame_id)
-            # self.debugc = MaxwellConstraint(self._p, myid, req.ref_frame_id)
+            self._env.getConstraintManager().addMaxwellConstraint(f.getFrameId(), req.ref_frame_id)
+            # self.debugc = MaxwellConstraint(self._p, f.getFrameId(), req.ref_frame_id)
             # self.debugc.updateConstraint()
+            self._env.getConstraintManager().addContactConstraint(f, axis=[1,1,0,0,0,0])
         
-        return myid
+        return f.getFrameId()
 
     def add_body_frame(self, req):
         if self._env == None:
             return -1337
         
-        myid = self._env.getFrameManager().createFrame(req.frame_name, ref_id=req.ref_frame_id, ref_link_id=req.ref_frame_link_id, is_body_frame=True)
-        print("ROSCommManager add_body_frame (AddFrameResponse) name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", myid: " + str(myid))     
-        return myid
+        f = self._env.getFrameManager().createFrame(req.frame_name, ref_id=req.ref_frame_id, ref_link_id=req.ref_frame_link_id, is_body_frame=True)
+        print("ROSCommManager add_body_frame (AddFrameResponse) name: " + str(req.frame_name) + ", ref id: " + str(req.ref_frame_id) + ", myid: " + str(f.getFrameId()))     
+        return f.getFrameId()
 
     # def get_frames(self, req):
     #     pass

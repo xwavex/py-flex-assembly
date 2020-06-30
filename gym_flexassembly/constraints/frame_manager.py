@@ -54,7 +54,7 @@ class FrameManager(object):
         # TODO avoid douplings
         self.updateFramePoses()
 
-        return tmp_frame.getFrameId()
+        return tmp_frame
 
     def calculateFrameDependency(self, frame, dep_order):
         if not frame.isBodyFrame():

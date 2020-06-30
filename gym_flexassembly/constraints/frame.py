@@ -143,7 +143,8 @@ class Frame(object):
         if self.is_body_frame:
             if self.ref_link_id > -1:
                 # TODO check indexing
-                linkWorldPosition, linkWorldOrientation, localInertialFramePosition, localInertialFrameOrientation, worldLinkFramePosition, worldLinkFrameOrientation, worldLinkLinearVelocity, worldLinkAngularVelocity = self.p.getLinkState(self.ref_link_id, self.ref_id)
+                # (x, y, z), (a, b, c, d), _, _, _, _
+                linkWorldPosition, linkWorldOrientation, localInertialFramePosition, localInertialFrameOrientation, worldLinkFramePosition, worldLinkFrameOrientation = self.p.getLinkState(self.ref_link_id, self.ref_id)
                 self.absolute_pos = worldLinkFramePosition
                 self.absolute_orn = worldLinkFrameOrientation
                 self.p.resetBasePositionAndOrientation(self.frame_ghost_id, self.absolute_pos, self.absolute_orn)

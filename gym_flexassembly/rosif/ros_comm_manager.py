@@ -35,6 +35,7 @@ from gym_flexassembly.envs.env_interface import EnvInterface
 
 # FLEX ASSEMBLY SMARTOBJECTS IMPORTS
 from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
+from gym_flexassembly.robots.kuka_iiwa import KukaIIWA, KukaIIWA7, KukaIIWA14
 
 from gym_flexassembly.constraints.maxwell_constraint import MaxwellConstraint
 
@@ -66,7 +67,7 @@ class ROSCommManager(object):
 
         service_set_auto_stepping = rospy.Service('set_auto_stepping', BiBo, self.set_auto_stepping)
 
-        service_add_constraint = rospy.Service('add_constraint', AddConstraint, self.add_constraint)
+        service_add_contact_constraint = rospy.Service('add_contact_constraint', AddConstraint, self.add_contact_constraint)
 
         service_add_frame = rospy.Service('add_frame', AddFrame, self.add_frame)
 
@@ -196,16 +197,31 @@ class ROSCommManager(object):
         # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
         # object
 
+        ret = MultiBodyIds()
         if req.urdf_file_name == "SpringClamp":
-            print("Trying to add smart object " + str(req.urdf_file_name))
+            print("Trying to add SpringClamp as smart object " + str(req.urdf_file_name))
             sObject = SpringClamp(pos=[req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], orn=[req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
+            ret.id = sObject.getModelId()
+        elif req.urdf_file_name == "KukaIIWA7":
+            print("Trying to add KukaIIWA7 as smart object " + str(req.urdf_file_name))
+            sObject = KukaIIWA7()
+            p.resetBasePositionAndOrientation(sObject.getUUid(), [req.frame_pose.position.x, req.frame_pose.position.y, req.frame_pose.position.z], [req.frame_pose.orientation.x,req.frame_pose.orientation.y,req.frame_pose.orientation.z,req.frame_pose.orientation.w])
+            # Collision
+            #                      0x10
+            collisionFilterGroup = 0x10
+            #                      0x11
+            collisionFilterMask =  0x11
+
+            self._p.setCollisionFilterGroupMask(sObject.getUUid(), -1, collisionFilterGroup, collisionFilterMask)
+            for i in range(self._p.getNumJoints(sObject.getUUid())):
+                self._p.setCollisionFilterGroupMask(sObject.getUUid(), i, collisionFilterGroup, collisionFilterMask)
+            ret.id = sObject.getUUid()
+        
         # Enable rendering again
         # self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 
         # TODO we need a manager that takes care of storing this thing!!!
-
-        ret = MultiBodyIds()
-        ret.id = sObject.getModelId()
+        
         print("Added id for smart body " + str(ret.id))
         return ret
 
@@ -226,11 +242,11 @@ class ROSCommManager(object):
     #     """
     #     pass
 
-    def add_constraint(self, req):
+    def add_contact_constraint(self, req):
         # find frame with id
         f = self._env.getFrameManager.getFrameById(req.target_id)
         c = self._env.getConstraintManager().addContactConstraint(f, axis=[req.axis_tx,req.axis_ty,req.axis_tz,req.axis_rx,req.axis_ry,req.axis_rz], direction=[req.direction_tx,req.direction_ty,req.direction_tz,req.direction_rx,req.direction_ry,req.direction_rz])
-        print("ROSCommManager add_constraint (AddConstraintResponse) " + str(c.getId()))
+        print("ROSCommManager add_contact_constraint (AddConstraintResponse) " + str(c.getId()))
         return c.getId()
 
     def add_frame(self, req):

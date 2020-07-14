@@ -1,3 +1,4 @@
 from .joint_gravity_compensation_controller import JointGravityCompensationController
 from .joint_pd_controller import JointPDController
+from .joint_pd_controller_simple import JointPDControllerSimple
 from .operational_space_controller import OperationalSpaceController

@@ -279,14 +279,14 @@
 
   <joint name="iiwa7_joint_ee" type="fixed">
     <parent link="iiwa7_link_7"/>
-    <child link="SchunkEGP40_link"/>
+    <child link="iiwa7_link_ee"/>
     <origin xyz="0 0 0.126" rpy="0 0 0"/>
   </joint>
 
   <!-- SCHUNK EGP 40 EEF -->
 
   <!-- Base -->
-    <link name="SchunkEGP40_link">
+    <link name="iiwa7_link_ee">
         <inertial>
             <mass value="0.6" />
             <origin rpy="0 0 0" xyz="0.00078059 -0.00070996 0.04726637" />
@@ -308,6 +308,59 @@
             </geometry>
         </collision>
     </link>
+
+  <!-- Finger 1 -->
+  <!-- <link name="SchunkEGP40_Finger1_link">
+      <inertial>
+          <mass value="0.04" />
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <inertia ixx="0.0000013454" ixy="0" ixz="0" iyy="0.00000061207" iyz="0" izz="0.00000097333" />
+      </inertial>
+      <visual>
+          <origin rpy="0 0 0" xyz="0 0 0" />
+          <geometry>
+              <mesh filename="model://schunk-egp-40/meshes/visual/dae/schunk-egp-40-finger-base.dae" scale="1 1 1" />
+          </geometry>
+          <material name="black">
+              <color rgba="0 0 0 1"/>
+          </material>
+      </visual>
+      <collision>
+          <origin rpy="0 0 0" xyz="0 0.0005 0.006075" />
+          <geometry>
+              <box size="0.006 0.016 0.01215" />
+          </geometry>
+      </collision>
+  </link> -->
+
+  <!-- Finger Joint 1 -->
+  <!-- <joint name="SchunkEGP40_Finger1_joint" type="prismatic">
+      <origin xyz="0.006800 0.000500 0.108000" rpy="0 0 0" />
+      <axis xyz="1 0 0" />
+      <limit effort="1" lower="0" upper="0.01" velocity="1" />
+      <dynamics damping="0.5" />
+      <parent link="iiwa7_link_ee" />
+      <child link="SchunkEGP40_Finger1_link" />
+  </joint> -->
+  <!-- <joint name="SchunkEGP40_Finger1_joint" type="fixed">
+    <parent link="iiwa7_link_ee"/>
+    <child link="SchunkEGP40_Finger1_link"/>
+    <origin xyz="0.006800 0.000500 0.108000" rpy="0 0 0" />
+  </joint> -->
+  <!-- <joint name="SchunkEGP40_Finger1_joint" type="revolute">
+    <parent link="iiwa7_link_ee"/>
+    <child link="SchunkEGP40_Finger1_link"/>
+    <origin xyz="0.006800 0.000500 0.108000" rpy="0 0 0" />
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.05432619099" upper="3.05432619099"
+           effort="300" velocity="3.14159265359" />
+    <safety_controller soft_lower_limit="-3.01941960595"
+                       soft_upper_limit="3.01941960595"
+                       k_position="100"
+                       k_velocity="2"/>
+    <dynamics damping="0.5"/>
+  </joint> -->
+
 
     <!-- Finger 1 -->
     <link name="SchunkEGP40_Finger1_link">
@@ -363,7 +416,7 @@
         <axis xyz="1 0 0" />
         <limit effort="1" lower="0" upper="0.01" velocity="-1" />
         <dynamics damping="1.0" />
-        <parent link="SchunkEGP40_link" />
+        <parent link="iiwa7_link_ee" />
         <child link="SchunkEGP40_Finger1_link" />
     </joint>
     <gazebo reference="SchunkEGP40_Finger1_joint">
@@ -377,7 +430,7 @@
         <axis xyz="1 0 0" />
         <limit effort="1" lower="0" upper="0.01" velocity="-1" />
         <dynamics damping="1.0" />
-        <parent link="SchunkEGP40_link" />
+        <parent link="iiwa7_link_ee" />
         <child link="SchunkEGP40_Finger2_link" />
     </joint>
     <gazebo reference="SchunkEGP40_Finger2_joint">

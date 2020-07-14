@@ -1,8 +1,6 @@
-# https://raw.githubusercontent.com/bulletphysics/bullet3/master/examples/pybullet/gym/pybullet_utils/pd_controller_stable.py
-
 import numpy as np
 
-class JointPDController(object):
+class JointPDControllerSimple(object):
 
     def __init__(self, pb):
         self._pb = pb
@@ -17,18 +15,17 @@ class JointPDController(object):
         qdot1 = []
         zeroAccelerations = []
         qError = []
-        # if (baseMass > 0):
-        #     numBaseDofs = 6
-        #     numPosBaseDofs = 7
-        #     q1 = [curPos[0], curPos[1], curPos[2], curOrn[0], curOrn[1], curOrn[2], curOrn[3]]
-        #     qdot1 = [0] * numBaseDofs
-        #     zeroAccelerations = [0] * numBaseDofs
-        #     angDiff = [0, 0, 0]
-        #     qError = [
-        #         desiredPositions[0] - curPos[0], desiredPositions[1] - curPos[1],
-        #         desiredPositions[2] - curPos[2], angDiff[0], angDiff[1], angDiff[2]
-        #     ]
-        
+        if (baseMass > 0):
+            numBaseDofs = 6
+            numPosBaseDofs = 7
+            q1 = [curPos[0], curPos[1], curPos[2], curOrn[0], curOrn[1], curOrn[2], curOrn[3]]
+            qdot1 = [0] * numBaseDofs
+            zeroAccelerations = [0] * numBaseDofs
+            angDiff = [0, 0, 0]
+            qError = [
+                desiredPositions[0] - curPos[0], desiredPositions[1] - curPos[1],
+                desiredPositions[2] - curPos[2], angDiff[0], angDiff[1], angDiff[2]
+            ]
         numJoints = len(jointIndices)
         jointStates = self._pb.getJointStates(bodyUniqueId, jointIndices)
 
@@ -43,23 +40,26 @@ class JointPDController(object):
         for j in range(numJoints):
             qError.append(desiredPositions[j + numPosBaseDofs] - q1[j + numPosBaseDofs])
         qdotError = qdotdes - qdot
+
+
         Kp = np.diagflat(kps)
         Kd = np.diagflat(kds)
         p = Kp.dot(qError)
         d = Kd.dot(qdotError)
 
         # forces = p + d
+        # M1 = self._pb.calculateMassMatrix(bodyUniqueId, q1)
+        # M = np.array(M1)
+        # M = (M + Kd * timeStep)
 
-        M1 = self._pb.calculateMassMatrix(bodyUniqueId, q1)
-        M = np.array(M1)
-        M = (M + Kd * timeStep)
         c1 = self._pb.calculateInverseDynamics(bodyUniqueId, q1, qdot1, zeroAccelerations)
         c = np.array(c1)
-        A = M
-        b = -c + p + d
-        qddot = np.linalg.solve(A, b)
-        # qddot = np.linalg.inv(A).dot(b)
-        tau = p + d - Kd.dot(qddot) * timeStep
+        # A = M
+        # b = -c + p + d
+        # qddot = np.linalg.solve(A, b)
+
+
+        tau = p + d
 
         # tau = p + d + c
         maxF = np.array(maxForces)

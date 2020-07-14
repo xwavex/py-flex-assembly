@@ -93,12 +93,16 @@ class FlexAssemblyEnv(EnvInterface):
         table_offset_world_z = 0
         self._p.resetBasePositionAndOrientation(table_id, [table_offset_world_x, table_offset_world_y, table_offset_world_z], [0,0,0,1])
 
+        # Load Rail
+        rail_id = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/flexassembly", "rail.urdf"), useFixedBase=True)
+        self._p.resetBasePositionAndOrientation(rail_id, [table_offset_world_x+0.90, table_offset_world_y+0.20, table_offset_world_z+0.75], [0,0,0,1])
+
         # Workpiece clamp 1
-        workpiece_1_offset_table_x = 0.60
-        workpiece_1_offset_table_y = 0.20
-        workpiece_1_offset_table_z = 0.75
+        workpiece_1_offset_table_x = 0.93
+        workpiece_1_offset_table_y = 0.2135
+        workpiece_1_offset_table_z = 0.774
         workpiece_1_offset_world = [table_offset_world_x + workpiece_1_offset_table_x, table_offset_world_y + workpiece_1_offset_table_y, table_offset_world_z + workpiece_1_offset_table_z]
-        workpiece_1 = SpringClamp(pos=workpiece_1_offset_world)
+        workpiece_1 = SpringClamp(pos=workpiece_1_offset_world, orn=[0,-0.131,0.991,0])
 
         # Workpiece clamp 2
         workpiece_2_offset_table_x = 0.70

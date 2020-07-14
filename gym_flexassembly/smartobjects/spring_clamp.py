@@ -9,7 +9,7 @@ import math
 from gym_flexassembly import data as flexassembly_data
 
 class SpringClamp:
-    def __init__(self, variant='W_QS_1', pos=[0,0,0], orn=[0,0,0,1], max_force = 50.0, joint_clip_index = 1, urdfRootPath=flexassembly_data.getDataPath(), use_inertia_from_urdf=False):
+    def __init__(self, variant='W_QS_1', pos=[0,0,0], orn=[0,0,1,0], max_force = 50.0, joint_clip_index = 1, urdfRootPath=flexassembly_data.getDataPath(), use_inertia_from_urdf=False):
         self._variant = variant
         self._urdfRoot_flexassembly = urdfRootPath
         self._pos = pos

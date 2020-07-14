@@ -198,8 +198,10 @@ class PDControllerStable(object):
             zeroAccelerations = [0] * numBaseDofs
             angDiff = [0, 0, 0]
             qError = [
-                desiredPositions[0] - curPos[0], desiredPositions[1] - curPos[1],
-                desiredPositions[2] - curPos[2], angDiff[0], angDiff[1], angDiff[2]
+                desiredPositions[0] - curPos[0],
+                desiredPositions[1] - curPos[1],
+                desiredPositions[2] - curPos[2],
+                angDiff[0], angDiff[1], angDiff[2]
             ]
         numJoints = self._pb.getNumJoints(bodyUniqueId)
         jointStates = self._pb.getJointStates(bodyUniqueId, jointIndices)

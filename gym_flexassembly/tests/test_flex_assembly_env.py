@@ -17,11 +17,11 @@ def main():
     # Disable realtime
     p.setRealTimeSimulation(0)
     # Chose step width
-    p.setTimeStep(0.001) # TODO Chose the right number that matches with OROCOS RTT
+    p.setTimeStep(0.001)
 
-
-    # while(1):
-    #     environment.step([])
+    environment.set_running(True)
+    while(1):
+        environment.step([])
 
     # done = False
     # while (not done):

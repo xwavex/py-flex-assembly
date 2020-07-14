@@ -4,19 +4,16 @@ import pybullet as p
 import time
 import numpy as np
 import math
+import os
 
-try:
-    from .robots import KukaIIWA7
-except (ImportError, SystemError):
-    from robots import KukaIIWA7
+from gym_flexassembly.robots import KukaIIWA7
 
-try:
-    from .controller import JointGravityCompensationController, JointPDController, OperationalSpaceController
-except (ImportError, SystemError):
-    from controller import JointGravityCompensationController, JointPDController, OperationalSpaceController
+from gym_flexassembly import data as flexassembly_data
+
+from gym_flexassembly.controller import JointGravityCompensationController, JointPDController, OperationalSpaceController, JointPDControllerSimple
 
 # Can alternatively pass in p.DIRECT
-client = p.connect(p.GUI)
+client = p.connect(p.GUI_SERVER)
 p.setGravity(0, 0, -9.81, physicsClientId=client)
 
 import pybullet_data
@@ -25,7 +22,20 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 planeId = p.loadURDF("plane.urdf")
 
-arm = KukaIIWA7()
+# arm = KukaIIWA7()
+# p.resetBasePositionAndOrientation(arm.getUUid(), [2, 2, 0.5], [0,0,0,1])
+# for indice in arm.getMotorIndices():
+#     print(indice)
+
+kukaUid = p.loadURDF(os.path.join(flexassembly_data.getDataPath(), "kuka-iiwa-7/model.urdf"), useFixedBase=True)
+p.resetBasePositionAndOrientation(kukaUid, [0, -0.2, 0.5], [0,0,0,1])
+numJoints = p.getNumJoints(kukaUid)
+allJoint = []
+zero = []
+for jon in range(numJoints):
+    allJoint.append(jon)
+    zero.append(0.0)
+p.setJointMotorControlArray(kukaUid, allJoint, p.VELOCITY_CONTROL, forces=zero)
 
 # Default Joint Positions
 jointPositions = [
@@ -65,7 +75,9 @@ ctrl_osc = OperationalSpaceController(
     # ctrlr_dof=[True, True, False, False, False, True],
 )
 
-arm.setControlMode("JOINT_TORQUE_CONTROL")
+ctrl_j_pd_s = JointPDControllerSimple(p)
+
+# arm.setControlMode("JOINT_TORQUE_CONTROL")
 p.setTimeStep(0.001) # TODO DLW
 while 1:
     joint_pos_0 = p.readUserDebugParameter(dp_joint_pos_0)
@@ -77,16 +89,18 @@ while 1:
     joint_pos_6 = p.readUserDebugParameter(dp_joint_pos_6)
 
     # GRAV COMP
-    cmd = ctrl.compute(arm.getUUid(), arm.getMotorIndices())
+    # cmd = ctrl.compute(arm.getUUid(), arm.getMotorIndices())
     # # JOINT PD
-    # desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
-    # desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-    # kps = [600,600,600,600,600,600,600]
-    # kds = [200,200,200,200,200,200,200]
-    # maxForces = 10000000
+    desiredPositions = [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
+    desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+    kps = [600,600,600,600,600,600,600]
+    kds = [200,200,200,200,200,200,200]
+    # kps = [100,100,100,100,100,100,100]
+    # kds = [10,10,10,10,10,10,10]
+    maxForces = 10000000
     # timeStep = 1
-    # cmd = ctrl_j_pd.compute(arm.getUUid(), arm.getMotorIndices(), desiredPositions, desiredVelocities, kps, kds,
-    #             maxForces)
+    cmd = ctrl_j_pd.compute(kukaUid, [1,2,3,4,5,6,7], desiredPositions, desiredVelocities, kps, kds,
+                maxForces)
     # # CART PD
     # # OSC
     # cmd = ctrl_osc.generate(q=feedback["q"], dq=feedback["dq"], target=target,)
@@ -95,8 +109,13 @@ while 1:
     # desiredVelocities = [0.0,0.0,0.0,0.0,0.0,0.0]
     # cmd = ctrl_osc.compute(arm.getUUid(), arm.getMotorIndices(), desiredPositions, desiredVelocities)
 
-    arm.setCommand(cmd)
+    # arm.setCommand(cmd)
+
+    p.setJointMotorControlArray(kukaUid,
+                                        [1,2,3,4,5,6,7],
+                                        p.TORQUE_CONTROL,
+                                        forces=cmd)
 
     p.stepSimulation()
 
-    # time.sleep(1/500) # TODO DLW
+    time.sleep(1/1000) # TODO DLW

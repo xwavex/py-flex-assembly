@@ -50,6 +50,8 @@ class EnvInterface(gym.Env):
         else:
             self._client_id = self._p.connect(self._p.SHARED_MEMORY_SERVER)
 
+        self._p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+
         self._p.resetSimulation()
         self._p.setTimeStep(self._timeStep)
         self._p.setGravity(0, 0, -9.81)

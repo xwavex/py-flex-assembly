@@ -1,3 +1,8 @@
+"""This is the interface object that encapsulates the setup of the KUKAIIWA robot platform. Since the priority of this project ATM resides on the OROCOS RTT side for configuring the robot, this class may not be fully functional. 
+:Author:
+  `Dennis Leroy Wigand <dwigand@cor-lab.de>`
+"""
+
 import os, inspect
 # currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 # parentdir = os.path.dirname(os.path.dirname(currentdir))
@@ -7,9 +12,6 @@ import pybullet as p
 import numpy as np
 import copy
 import math
-
-# KDL SOLVER IMPORTS
-# import PyKDL
 
 # FLEX ASSEMBLY DATA IMPORTS
 from gym_flexassembly import data as flexassembly_data
@@ -46,10 +48,10 @@ class KukaIIWA:
 
     def reset(self):
         if self.variant == '14':
-            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "kuka-iiwa-7/model.urdf"), useFixedBase=True)
+            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "robots/kuka-iiwa-7/model.urdf"), useFixedBase=True)
             # flags=p.URDF_USE_INERTIA_FROM_FILE
         else:
-            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "kuka-iiwa-7/model.urdf"), useFixedBase=True)
+            self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "robots/kuka-iiwa-7/model.urdf"), useFixedBase=True)
 
         p.resetBasePositionAndOrientation(self.kukaUid, self._pos, self._orn)
 

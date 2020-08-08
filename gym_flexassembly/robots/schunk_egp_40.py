@@ -1,3 +1,8 @@
+"""This is the interface object that encapsulates the setup of the Schunk EGP40 gripper. Since the priority of this project ATM resides on the OROCOS RTT side for configuring the robot, this class may not be fully functional. 
+:Author:
+  `Dennis Leroy Wigand <dwigand@cor-lab.de>`
+"""
+
 import os, inspect
 
 import pybullet as p
@@ -42,9 +47,9 @@ class SchunkEGP40:
     def reset(self):
         if self._connect_to_loaded_model_id == -1:
             if self._use_inertia_from_urdf:
-                self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/schunk-egp-40", "model.urdf"), useFixedBase=False, flags = p.URDF_USE_INERTIA_FROM_FILE)
+                self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/robots/schunk-egp-40", "model.urdf"), useFixedBase=False, flags = p.URDF_USE_INERTIA_FROM_FILE)
             else:
-                self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/schunk-egp-40", "model.urdf"), useFixedBase=False)
+                self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/robots/schunk-egp-40", "model.urdf"), useFixedBase=False)
             p.resetBasePositionAndOrientation(self._model_id, self._pos, self._orn)
 
         # TODO Take care of the gripper mechanism

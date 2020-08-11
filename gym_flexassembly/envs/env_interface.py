@@ -30,6 +30,15 @@ class EnvInterface(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
     def __init__(self, gui=True, ros_frame_broadcaster=None):
+        self.ros_loaded = False
+        # (OPTIONAL) ROS IMPORTS
+        try:
+            import rospy
+            from geometry_msgs.msg import Pose
+            self.ros_loaded = True
+        except ImportError:
+            self.ros_loaded = False
+        
         self._client_id = -1;
 
         self._timeStep = 1.0 / 1000.0
@@ -57,12 +66,21 @@ class EnvInterface(gym.Env):
         self._p.setGravity(0, 0, -9.81)
 
         # Floor SHOULD BE ALWAYS ID 0
-        self._p.loadURDF(os.path.join(flexassembly_data.getDataPath(), "plane_solid.urdf"), useMaximalCoordinates=True) # Brauche ich fuer die hit rays
+        self._p.loadURDF(os.path.join(flexassembly_data.getDataPath(), "objects/plane_solid.urdf"), useMaximalCoordinates=True) # Brauche ich fuer die hit rays
 
 
         # self._p.setRealTimeSimulation(1)
 
         # self._p.stepSimulation()
+
+        dv = 2.0
+        self.dp_joint_pos_0 = p.addUserDebugParameter("j0", -dv, dv, 0)
+        self.dp_joint_pos_1 = p.addUserDebugParameter("j1", -dv, dv, 0)
+        self.dp_joint_pos_2 = p.addUserDebugParameter("j2", -dv, dv, 0)
+        self.dp_joint_pos_3 = p.addUserDebugParameter("j3", -dv, dv, 0)
+        self.dp_joint_pos_4 = p.addUserDebugParameter("j4", -dv, dv, 0)
+        self.dp_joint_pos_5 = p.addUserDebugParameter("j5", -dv, dv, 0)
+        self.dp_joint_pos_6 = p.addUserDebugParameter("j6", -dv, dv, 0)
 
         self.setup_manager()
 
@@ -97,3 +115,13 @@ class EnvInterface(gym.Env):
     def updateConstraints(self):
         if self._cm:
             self._cm.updateConstraints()
+
+    def getDebugJointCommands(self):
+        joint_pos_0 = self._p.readUserDebugParameter(self.dp_joint_pos_0)
+        joint_pos_1 = self._p.readUserDebugParameter(self.dp_joint_pos_1)
+        joint_pos_2 = self._p.readUserDebugParameter(self.dp_joint_pos_2)
+        joint_pos_3 = self._p.readUserDebugParameter(self.dp_joint_pos_3)
+        joint_pos_4 = self._p.readUserDebugParameter(self.dp_joint_pos_4)
+        joint_pos_5 = self._p.readUserDebugParameter(self.dp_joint_pos_5)
+        joint_pos_6 = self._p.readUserDebugParameter(self.dp_joint_pos_6)
+        return [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]

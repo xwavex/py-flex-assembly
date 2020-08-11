@@ -83,11 +83,11 @@ class FlexAssemblyEnv(EnvInterface):
         # Disable rendering
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
 
-        # Floor SHOULD BE ALWAYS ID 0
-        self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly, "plane_solid.urdf"), useMaximalCoordinates=True) # Brauche ich fuer die hit rays
+        # # Floor SHOULD BE ALWAYS ID 0
+        # self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly, "objects/plane_solid.urdf"), useMaximalCoordinates=True) # Brauche ich fuer die hit rays
 
         # Table
-        table_id = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/3d", "table_profile_1.urdf"), useFixedBase=True, flags = self._p.URDF_USE_INERTIA_FROM_FILE)
+        table_id = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/objects", "table_profile_1.urdf"), useFixedBase=True, flags = self._p.URDF_USE_INERTIA_FROM_FILE)
         table_offset_world_x = -0.85
         table_offset_world_y = 0
         table_offset_world_z = 0

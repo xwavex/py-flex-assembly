@@ -44,6 +44,8 @@ class FlexAssemblyEnv(EnvInterface):
                gui=True):
         super().__init__(gui)
 
+        self.robotList = []
+
         self._stepping = stepping
         self._timeStep = 1.0 / 1000.0
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
@@ -58,7 +60,6 @@ class FlexAssemblyEnv(EnvInterface):
         self.largeValObservation = 100 # TODO
         self.RENDER_HEIGHT = 720 # TODO
         self.RENDER_WIDTH = 960 # TODO
-
 
         self.seed()
 
@@ -139,6 +140,10 @@ class FlexAssemblyEnv(EnvInterface):
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 
+        self.robotList.append(self.kuka7_1.getUUid())
+
+    def getRobots(self):
+        return self.robotList
 
     def reset(self):
         self._terminated = False
@@ -149,9 +154,11 @@ class FlexAssemblyEnv(EnvInterface):
 
 
         # TODO how to delete all elements in preface?
+        # Floor SHOULD BE ALWAYS ID 0
+        self._p.loadURDF(os.path.join(flexassembly_data.getDataPath(), "objects/plane_solid.urdf"), useMaximalCoordinates=True) # Brauche ich fuer die hit rays
 
         self.loadEnvironment()
-        # self.loadRobot()
+        self.loadRobot()
 
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "plane.urdf"), [0, 0, -1])
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "table/table.urdf"), 0.5000000, 0.00000, -.820000,

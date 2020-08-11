@@ -11,7 +11,12 @@ from sensor_msgs.msg import JointState
 
 import pybullet as p
 
+from gym_flexassembly.planning import FlexPlanning
+
+import numpy as np
+
 def main():
+    # Load the flex assembly environment
     environment = FlexAssemblyEnv(stepping=False)
 
     # Disable realtime
@@ -26,9 +31,26 @@ def main():
 
     pub_debug_joint_commands = rospy.Publisher('debug_joint_commands', JointState, queue_size=1)
 
+    # Init ROS node
     rospy.init_node('test_flex_assembly_env_ros', anonymous=False)
     
     rate = rospy.Rate(1000) # 1000hz
+
+    ### Load plugins ###
+    # Load planner
+    planner = FlexPlanning(p, environment.getRobots()[0])
+
+    linkWorld = p.getLinkState(environment.getRobots()[0], 6, computeForwardKinematics=1)
+
+    print("linkWorld = ", linkWorld)
+    linkWorldPosition = np.array(linkWorld[0])
+    print("linkWorldPosition = ", linkWorldPosition)
+    linkWorldPosition[0] = linkWorldPosition[0] + 0.05
+    print("linkWorldPosition (new) = ", linkWorldPosition)
+
+    orn = p.getQuaternionFromEuler([0.,-1.57,0.]) # TODO
+    path = planner.calculatePath(linkWorldPosition, linkWorld[1])
+
     while not rospy.is_shutdown():
         if run:
             read_data_arr = environment.getDebugJointCommands()
@@ -42,8 +64,12 @@ def main():
                     msg.velocity.append(0.0)
                     msg.effort.append(0.0)
                 pub_debug_joint_commands.publish(msg)
-        rate.sleep()
+        # Process Plugins
+        # 
+        # 
+        p.stepSimulation();
 
+        rate.sleep()
     try:
         signal.pause()
     except (KeyboardInterrupt, SystemExit):

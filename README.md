@@ -17,10 +17,9 @@ Inverse Kinematics:
 
 # ATI Sensor
 
-Diameter: 77,0 mm
-Height: 36,0 mm
-weight: 283,0 g
-Dimensions contain adapterplate.
+* Diameter: 77,0 mm
+* Height: 36,0 mm
+* Weight: 283,0 g
+* All dimensions contain the adapterplate.
 
-3D Model:
-https://www.ati-ia.com/products/ft/ft_models.aspx?id=Gamma
+* 3D Model: https://www.ati-ia.com/products/ft/ft_models.aspx?id=Gamma

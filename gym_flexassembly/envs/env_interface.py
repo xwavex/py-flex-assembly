@@ -164,12 +164,17 @@ class EnvInterface(gym.Env):
             rate = rospy.Rate(settings['framerate'])
             while not self._cameras[name]['stop_flag']:
                 # get a new camera image
-                _, _, rgba, depth_buffer, _ = self._p.getCameraImage(settings['width'],
-                                          settings['height'],
-                                          settings['view_matrix'],
-                                          settings['projection_matrix'],
-                                          shadow=True,
-                                          renderer=self._p.ER_BULLET_HARDWARE_OPENGL)
+                try: 
+                    _, _, rgba, depth_buffer, _ = self._p.getCameraImage(settings['width'],
+                                              settings['height'],
+                                              settings['view_matrix'],
+                                              settings['projection_matrix'],
+                                              shadow=True,
+                                              renderer=self._p.ER_BULLET_HARDWARE_OPENGL)
+                except Exception as x:
+                    # lost connection to pybullet server so quit
+                    break
+
                 near = settings['near']
                 far = settings['far']
                 depth = far * near / (far - (far - near) * depth_buffer)

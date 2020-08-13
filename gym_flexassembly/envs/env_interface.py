@@ -150,8 +150,7 @@ class EnvInterface(gym.Env):
     
     def add_camera(self, settings, name):
         if name in self._cameras:
-            raise ValueError('Camera[' + name + '] already exists!')
-            return
+            raise ValueError('Camera[%s] already exists!' % name)
 
         self._cameras[name] = {}
         self._cameras[name]['settings'] = settings

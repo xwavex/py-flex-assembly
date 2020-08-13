@@ -4,6 +4,7 @@ import os, inspect
 import math
 import numpy as np
 import random
+import threading
 import time
 
 # PYBULLET IMPORTS
@@ -34,7 +35,15 @@ class EnvInterface(gym.Env):
         # (OPTIONAL) ROS IMPORTS
         try:
             import rospy
+            from std_msgs.msg import Header
             from geometry_msgs.msg import Pose
+            from sensor_msgs.msg import Image
+            import cv_bridge
+
+            global rospy, cv_bridge, Pose, Image, Header
+
+            rospy.init_node('env', anonymous=True)
+
             self.ros_loaded = True
         except ImportError:
             self.ros_loaded = False
@@ -82,6 +91,8 @@ class EnvInterface(gym.Env):
         self.dp_joint_pos_5 = p.addUserDebugParameter("j5", -dv, dv, 0)
         self.dp_joint_pos_6 = p.addUserDebugParameter("j6", -dv, dv, 0)
 
+        self._cameras = {}
+
         self.setup_manager()
 
     def setup_manager(self):
@@ -98,6 +109,9 @@ class EnvInterface(gym.Env):
         return self._client_id
 
     def __del__(self):
+        for camera in self._cameras:
+            self.remove_camera(camera)
+
         self._p.disconnect()
 
     def set_running(self, run):
@@ -125,3 +139,66 @@ class EnvInterface(gym.Env):
         joint_pos_5 = self._p.readUserDebugParameter(self.dp_joint_pos_5)
         joint_pos_6 = self._p.readUserDebugParameter(self.dp_joint_pos_6)
         return [joint_pos_0,joint_pos_1,joint_pos_2,joint_pos_3,joint_pos_4,joint_pos_5,joint_pos_6]
+
+    def remove_camera(self, name):
+        if name not in self._cameras:
+            return
+
+        self._cameras[name]['stop_flag'] = True
+        self._cameras[name]['thread'].join()
+        del self._cameras[name]
+    
+    def add_camera(self, settings, name):
+        if name in self._cameras:
+            raise ValueError('Camera[' + name + '] already exists!')
+            return
+
+        self._cameras[name] = {}
+        self._cameras[name]['settings'] = settings
+        self._cameras[name]['stop_flag'] = False
+        def thread_func():
+            pub_depth = rospy.Publisher('/camera/' + name + '/depth/image_raw', Image, queue_size=10)
+            pub_color = rospy.Publisher('/camera/' + name + '/color/image_raw', Image, queue_size=10)
+
+            bridge = cv_bridge.CvBridge()
+
+            rate = rospy.Rate(settings['framerate'])
+            while not self._cameras[name]['stop_flag']:
+                # get a new camera image
+                _, _, rgba, depth_buffer, _ = self._p.getCameraImage(settings['width'],
+                                          settings['height'],
+                                          settings['view_matrix'],
+                                          settings['projection_matrix'],
+                                          shadow=True,
+                                          renderer=self._p.ER_BULLET_HARDWARE_OPENGL)
+                near = settings['near']
+                far = settings['far']
+                depth = far * near / (far - (far - near) * depth_buffer)
+                rgb = rgba[:, :, :3]
+
+                # create a header for the messages
+                header = Header()
+                header.stamp = rospy.Time.now()
+
+                try:
+                    img_depth = bridge.cv2_to_imgmsg(depth, 'passthrough')
+                    img_color = bridge.cv2_to_imgmsg(rgb, 'passthrough')
+                except cv_bridge.CvBridgeError as e:
+                    print('Could not convert CV image to ROS msg: ' + str(e))
+
+                # publish the images
+                img_depth.header = header
+                img_depth.header.frame_id = 'depth_image'
+                pub_depth.publish(img_depth)
+
+                img_color.header = header
+                img_color.header.frame_id = 'color_image'
+                pub_color.publish(img_color)
+
+                rate.sleep()
+
+            pub_color.unregister()
+            pub_depth.unregister()
+
+        self._cameras[name]['thread'] = threading.Thread(target=thread_func, daemon=True)
+        self._cameras[name]['thread'].start()

@@ -63,6 +63,20 @@ class FlexAssemblyEnv(EnvInterface):
 
         self.seed()
 
+        if self.ros_loaded:
+            cam_global_pos = [0, 0, 1.2]
+            cam_global_target_pos = [0, 0, 0]
+            cam_global_up = [0, -1.0, 0]
+            self.cam_global_settings = {
+                    'width': 1280,
+                    'height': 720,
+                    'fov': 65,
+                    'near': 0.16,
+                    'far': 10,
+                    'framerate': 30,
+                    'up': [0, -1.0, 0]}
+            self.cam_global_name = 'global'
+
         self.reset()
 
         # observationDim = len(self.getExtendedObservation())
@@ -120,6 +134,10 @@ class FlexAssemblyEnv(EnvInterface):
         workpiece_3_offset_world = [table_offset_world_x + workpiece_3_offset_table_x, table_offset_world_y + workpiece_3_offset_table_y, table_offset_world_z + workpiece_3_offset_table_z]
         workpiece_3 = SpringClamp(pos=workpiece_3_offset_world)
 
+        # Global camera
+        self.cam_global_settings['pos'] = [workpiece_2_offset_world[0], workpiece_2_offset_world[1], workpiece_2_offset_world[2] + 0.6]
+        self.cam_global_settings['target_pos'] = workpiece_2_offset_world
+
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 
@@ -145,6 +163,26 @@ class FlexAssemblyEnv(EnvInterface):
     def getRobots(self):
         return self.robotList
 
+    def loadCameras(self):
+        if not self.ros_loaded:
+            return
+
+        print('Load camera')
+        self.remove_camera(name=self.cam_global_name)
+        view_matrix = self._p.computeViewMatrix(self.cam_global_settings['pos'],
+                                                self.cam_global_settings['target_pos'],
+                                                # [0, 0, 0],
+                                                self.cam_global_settings['up'])
+        projection_matrix = self._p.computeProjectionMatrixFOV(self.cam_global_settings['fov'],
+                                                               (self.cam_global_settings['width'] / self.cam_global_settings['height']),
+                                                               self.cam_global_settings['near'],
+                                                               self.cam_global_settings['far'])
+        self.cam_global_settings['view_matrix'] = view_matrix
+        self.cam_global_settings['projection_matrix'] = projection_matrix
+        print('Settings: ' + str(self.cam_global_settings))
+        print('View: ' + str(self._p.computeViewMatrix([0, 0, 0.75], [0, 0, 0], [0, -1.0, 0])))
+        self.add_camera(settings=self.cam_global_settings, name=self.cam_global_name)
+
     def reset(self):
         self._terminated = False
         self._p.resetSimulation()
@@ -159,6 +197,7 @@ class FlexAssemblyEnv(EnvInterface):
 
         self.loadEnvironment()
         self.loadRobot()
+        self.loadCameras()
 
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "plane.urdf"), [0, 0, -1])
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "table/table.urdf"), 0.5000000, 0.00000, -.820000,

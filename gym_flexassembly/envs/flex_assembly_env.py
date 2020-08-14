@@ -169,18 +169,6 @@ class FlexAssemblyEnv(EnvInterface):
 
         print('Load camera')
         self.remove_camera(name=self.cam_global_name)
-        view_matrix = self._p.computeViewMatrix(self.cam_global_settings['pos'],
-                                                self.cam_global_settings['target_pos'],
-                                                # [0, 0, 0],
-                                                self.cam_global_settings['up'])
-        projection_matrix = self._p.computeProjectionMatrixFOV(self.cam_global_settings['fov'],
-                                                               (self.cam_global_settings['width'] / self.cam_global_settings['height']),
-                                                               self.cam_global_settings['near'],
-                                                               self.cam_global_settings['far'])
-        self.cam_global_settings['view_matrix'] = view_matrix
-        self.cam_global_settings['projection_matrix'] = projection_matrix
-        print('Settings: ' + str(self.cam_global_settings))
-        print('View: ' + str(self._p.computeViewMatrix([0, 0, 0.75], [0, 0, 0], [0, -1.0, 0])))
         self.add_camera(settings=self.cam_global_settings, name=self.cam_global_name)
 
     def reset(self):

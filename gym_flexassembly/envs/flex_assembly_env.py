@@ -89,7 +89,7 @@ class FlexAssemblyEnv(EnvInterface):
         #     action_high = np.array([self._action_bound] * action_dim)
         #     self.action_space = spaces.Box(-action_high, action_high)
         # self.observation_space = spaces.Box(-observation_high, observation_high)
-    
+
 
     def loadEnvironment(self):
         # print("pybullet_data.getDataPath() = " + str(pybullet_data.getDataPath()))
@@ -137,6 +137,8 @@ class FlexAssemblyEnv(EnvInterface):
         # Global camera
         self.cam_global_settings['pos'] = [workpiece_2_offset_world[0], workpiece_2_offset_world[1], workpiece_2_offset_world[2] + 0.6]
         self.cam_global_settings['target_pos'] = workpiece_2_offset_world
+        realsense_camera_id = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/objects", "RealSense_D435.urdf"), useFixedBase=True)
+        self._p.resetBasePositionAndOrientation(realsense_camera_id, self.cam_global_settings['pos'], [0,0,0,1])
 
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
@@ -341,7 +343,7 @@ class FlexAssemblyEnv(EnvInterface):
         #     self._observation = self.getExtendedObservation()
         #     return True
         return False
-    
+
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

@@ -32,8 +32,10 @@ from pybullet_planning.interfaces.env_manager import create_box
 from pybullet_planning.interfaces.robots.body import get_bodies
 # TODO clean up the imports
 
+from pybullet_planning.utils import CLIENT, set_client
+
 class FlexPlanning(object):
-    def __init__(self, pybullet, robot):
+    def __init__(self, pybullet, robot, shadow_client):
         self._p = pybullet
         self._robot = robot
         ### Nullspace ###
@@ -50,9 +52,21 @@ class FlexPlanning(object):
         # Restposes for null space
         self.rp = [0.98, 0.458, 0.31, -2.24, -0.30, 2.66, 2.32, 0.02, 0.02]
 
+        self._shadow_client = shadow_client
+
+        print("Planner initialized for robot with id", robot)
+
     def calculatePath(self, goalPosition, goalOrientation, attachments=[]):
         # Sync pyBullet bodies
         self._p.syncBodyInfo()
+        self._p.syncBodyInfo(physicsClientId=self._shadow_client)
+
+        # Safe state of main bullet instance
+        # self._p.saveBullet("/tmp/state.bullet")
+        # Load state into the shadow bullet instance
+        # self._p.restoreState(fileName="/tmp/state.bullet", physicsClientId=self._shadow_client)
+
+        set_client(self._shadow_client) # Since this does not work, we need to use https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_utils/bullet_client.py to inject the shadow id in every call... TODO
 
         # Get all objects from the world and test for obstacles
         self._obstacles = []

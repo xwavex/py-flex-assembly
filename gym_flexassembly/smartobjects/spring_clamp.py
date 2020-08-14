@@ -9,7 +9,7 @@ import math
 from gym_flexassembly import data as flexassembly_data
 
 class SpringClamp:
-    def __init__(self, variant='W_QS_1', pos=[0,0,0], orn=[0,0,1,0], max_force = 50.0, joint_clip_index = 1, urdfRootPath=flexassembly_data.getDataPath(), use_inertia_from_urdf=False):
+    def __init__(self, variant='W_QS_1', pos=[0,0,0], orn=[0,0,1,0], max_force = 50.0, joint_clip_index = 1, urdfRootPath=flexassembly_data.getDataPath(), use_inertia_from_urdf=False, shadow_client=-1):
         self._variant = variant
         self._urdfRoot_flexassembly = urdfRootPath
         self._pos = pos
@@ -27,6 +27,8 @@ class SpringClamp:
 
         self._use_inertia_from_urdf = use_inertia_from_urdf
 
+        self._shadow_client = shadow_client
+
         self.reset()
 
     def getModelId(self):
@@ -36,16 +38,27 @@ class SpringClamp:
         self._pos = pos
         self._orn = orn
         p.resetBasePositionAndOrientation(self._model_id, self._pos, self._orn)
+        if self._shadow_client > -1:
+            p.resetBasePositionAndOrientation(self._model_id_shadow, self._pos, self._orn, physicsClientId=self._shadow_client)
 
     def reset(self):
         if self._use_inertia_from_urdf:
             self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/smartobjects/W_QS_1", "W_QS_1.urdf"), useFixedBase=False, flags = p.URDF_USE_INERTIA_FROM_FILE)
+            if self._shadow_client > -1:
+                self._model_id_shadow = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/smartobjects/W_QS_1", "W_QS_1.urdf"), useFixedBase=False, flags = p.URDF_USE_INERTIA_FROM_FILE, physicsClientId=self._shadow_client)
         else:
             self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/smartobjects/W_QS_1", "W_QS_1.urdf"), useFixedBase=False)
+            if self._shadow_client > -1:
+                self._model_id_shadow = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/smartobjects/W_QS_1", "W_QS_1.urdf"), useFixedBase=False, physicsClientId=self._shadow_client)
+
         p.resetBasePositionAndOrientation(self._model_id, self._pos, self._orn)
+        if self._shadow_client > -1:
+            p.resetBasePositionAndOrientation(self._model_id_shadow, self._pos, self._orn, physicsClientId=self._shadow_client)
 
         # Take care of the spring loaded simulation of the clipping mechanism
         p.setJointMotorControl2(bodyIndex=self._model_id, jointIndex=self._joint_clip_index, controlMode=p.POSITION_CONTROL, targetPosition=self._ul, targetVelocity=0, force=self._max_force)
+        if self._shadow_client > -1:
+            p.setJointMotorControl2(bodyIndex=self._model_id_shadow, jointIndex=self._joint_clip_index, controlMode=p.POSITION_CONTROL, targetPosition=self._ul, targetVelocity=0, force=self._max_force, physicsClientId=self._shadow_client)
 
         # Collision
         #                      0x10
@@ -56,6 +69,11 @@ class SpringClamp:
         p.setCollisionFilterGroupMask(self._model_id, -1, collisionFilterGroup, collisionFilterMask)
         for i in range(p.getNumJoints(self._model_id)):
             p.setCollisionFilterGroupMask(self._model_id, i, collisionFilterGroup, collisionFilterMask)
+
+        if self._shadow_client > -1:
+            p.setCollisionFilterGroupMask(self._model_id_shadow, -1, collisionFilterGroup, collisionFilterMask, physicsClientId=self._shadow_client)
+            for i in range(p.getNumJoints(self._model_id_shadow)):
+                p.setCollisionFilterGroupMask(self._model_id_shadow, i, collisionFilterGroup, collisionFilterMask, physicsClientId=self._shadow_client)
 
     def getMotorIndices(self):
         return self.motorIndices

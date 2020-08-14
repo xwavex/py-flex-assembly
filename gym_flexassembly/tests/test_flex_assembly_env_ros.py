@@ -39,6 +39,15 @@ def main():
 
     p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
 
+    # Upload robots to parameter server
+    rospy.set_param("robot_map", environment.getRobotMap())
+
+    print("\n##########################")
+    print("### INITIALIZED ROBOTS ###")
+    for k,v in rospy.get_param("robot_map").items():
+        print("    > robot",k,"with id",v)
+    print("##########################\n")
+
     run = True
     environment.set_running(run)
 
@@ -52,19 +61,8 @@ def main():
     ### Load plugins ###
     # Load planner
     global planner
-    planner = FlexPlanning(p, environment.getRobots()[0])
-
+    planner = FlexPlanning(p, list(environment.getRobotMap().values())[0], environment.get_shadow_client_id())
     service_planner = rospy.Service('service_planner', RequestTrajectory, plan_fnc)
-    print("Service Planner created!")
-
-    linkWorld = p.getLinkState(environment.getRobots()[0], 6, computeForwardKinematics=1)
-    print("linkWorld = ", linkWorld)
-    linkWorldPosition = np.array(linkWorld[0])
-    print("linkWorldPosition = ", linkWorldPosition)
-    # linkWorldPosition[0] = linkWorldPosition[0] + 0.05
-    # print("linkWorldPosition (new) = ", linkWorldPosition)
-
-    
 
     while not rospy.is_shutdown():
         if run:
@@ -89,7 +87,6 @@ def main():
         signal.pause()
     except (KeyboardInterrupt, SystemExit):
         print("Shutting down...")
-
 
 if __name__ == "__main__":
     main()

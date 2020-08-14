@@ -44,8 +44,6 @@ class FlexAssemblyEnv(EnvInterface):
                gui=True):
         super().__init__(gui)
 
-        self.robotList = []
-
         self._stepping = stepping
         self._timeStep = 1.0 / 1000.0
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
@@ -93,10 +91,18 @@ class FlexAssemblyEnv(EnvInterface):
         table_offset_world_y = 0
         table_offset_world_z = 0
         self._p.resetBasePositionAndOrientation(table_id, [table_offset_world_x, table_offset_world_y, table_offset_world_z], [0,0,0,1])
+        # Shadow
+        table_id_shadow = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/objects", "table_profile_1.urdf"), useFixedBase=True, flags = self._p.URDF_USE_INERTIA_FROM_FILE, physicsClientId=self._shadow_client_id)
+        self._p.resetBasePositionAndOrientation(table_id_shadow, [table_offset_world_x, table_offset_world_y, table_offset_world_z], [0,0,0,1], physicsClientId=self._shadow_client_id)
+
 
         # Load Rail
         rail_id = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/flexassembly", "rail.urdf"), useFixedBase=True)
         self._p.resetBasePositionAndOrientation(rail_id, [table_offset_world_x+0.50, table_offset_world_y+0.25, table_offset_world_z+0.75], [0,0,0,1])
+        # Shadow
+        rail_id_shadow = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/flexassembly", "rail.urdf"), useFixedBase=True, physicsClientId=self._shadow_client_id)
+        self._p.resetBasePositionAndOrientation(rail_id_shadow, [table_offset_world_x+0.50, table_offset_world_y+0.25, table_offset_world_z+0.75], [0,0,0,1], physicsClientId=self._shadow_client_id)
+        
 
         # Workpiece clamp 1
         workpiece_1_offset_table_x = 0.60
@@ -104,21 +110,21 @@ class FlexAssemblyEnv(EnvInterface):
         workpiece_1_offset_table_z = 0.75
         workpiece_1_offset_world = [table_offset_world_x + workpiece_1_offset_table_x, table_offset_world_y + workpiece_1_offset_table_y, table_offset_world_z + workpiece_1_offset_table_z]
         # workpiece_1 = SpringClamp(pos=workpiece_1_offset_world, orn=[0,-0.131,0.991,0])workpiece_1 = SpringClamp(pos=workpiece_1_offset_world, orn=[0,-0.131,0.991,0])
-        workpiece_1 = SpringClamp(pos=workpiece_1_offset_world)
+        workpiece_1 = SpringClamp(pos=workpiece_1_offset_world, shadow_client=self._shadow_client_id)
 
         # Workpiece clamp 2
         workpiece_2_offset_table_x = 0.70
         workpiece_2_offset_table_y = 0.20
         workpiece_2_offset_table_z = 0.75
         workpiece_2_offset_world = [table_offset_world_x + workpiece_2_offset_table_x, table_offset_world_y + workpiece_2_offset_table_y, table_offset_world_z + workpiece_2_offset_table_z]
-        workpiece_2 = SpringClamp(pos=workpiece_2_offset_world)
+        workpiece_2 = SpringClamp(pos=workpiece_2_offset_world, shadow_client=self._shadow_client_id)
 
         # Workpiece clamp 3
         workpiece_3_offset_table_x = 0.80
         workpiece_3_offset_table_y = 0.20
         workpiece_3_offset_table_z = 0.75
         workpiece_3_offset_world = [table_offset_world_x + workpiece_3_offset_table_x, table_offset_world_y + workpiece_3_offset_table_y, table_offset_world_z + workpiece_3_offset_table_z]
-        workpiece_3 = SpringClamp(pos=workpiece_3_offset_world)
+        workpiece_3 = SpringClamp(pos=workpiece_3_offset_world, shadow_client=self._shadow_client_id)
 
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
@@ -127,27 +133,17 @@ class FlexAssemblyEnv(EnvInterface):
         # Disable rendering
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
 
-        self.kuka7_1 = KukaIIWA7_EGP40()
-        self._p.resetBasePositionAndOrientation(self.kuka7_1.getUUid(), [0,-0.2,0.5], [0,0,0,1])
-        collisionFilterGroup_kuka = 0x10
-        collisionFilterMask_kuka = 0x1
-        for i in range(self._p.getNumJoints(self.kuka7_1.getUUid())):
-            self._p.setCollisionFilterGroupMask(self.kuka7_1.getUUid(), i-1, collisionFilterGroup_kuka, collisionFilterMask_kuka)
-        self._p.enableJointForceTorqueSensor(self.kuka7_1.getUUid(), 8) # Why 8?
-
-        arm_ft_7 = self._p.addUserDebugLine([0, 0, 0], [0, 0, 0], [0.6, 0.3, 0.1], parentObjectUniqueId=self.kuka7_1.getUUid(), parentLinkIndex=7)
+        self.kuka7_1 = KukaIIWA7_EGP40(pos=[0,-0.2,0.5], orn=[0,0,0,1], shadow_client=self._shadow_client_id)
 
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
-
-        self.robotList.append(self.kuka7_1.getUUid())
-
-    def getRobots(self):
-        return self.robotList
+        # Store name with as unique identified + "_0" and the id
+        self.robotMap[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
 
     def reset(self):
         self._terminated = False
         self._p.resetSimulation()
+        self.robotList={}
         # self._p.setPhysicsEngineParameter(numSolverIterations=150)
         self._p.setTimeStep(self._timeStep)
         self._p.setGravity(0, 0, -9.81)

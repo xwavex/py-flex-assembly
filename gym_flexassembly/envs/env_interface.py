@@ -30,6 +30,8 @@ class EnvInterface(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
     def __init__(self, gui=True, ros_frame_broadcaster=None):
+        self.robotMap = {}
+
         self.ros_loaded = False
         # (OPTIONAL) ROS IMPORTS
         try:
@@ -39,7 +41,8 @@ class EnvInterface(gym.Env):
         except ImportError:
             self.ros_loaded = False
         
-        self._client_id = -1;
+        self._client_id = -1
+        self._shadow_client_id = -1
 
         self._timeStep = 1.0 / 1000.0
 
@@ -58,6 +61,10 @@ class EnvInterface(gym.Env):
             self._client_id = self._p.connect(self._p.GUI_SERVER, options='--background_color_red=1.0 --background_color_green=1.0 --background_color_blue=1.0')
         else:
             self._client_id = self._p.connect(self._p.SHARED_MEMORY_SERVER)
+        print("Initialized main pybullet instance with id",self._client_id)
+
+        self._shadow_client_id = self._p.connect(self._p.DIRECT)
+        print("Initialized shadow pybullet instance with id",self._shadow_client_id)
 
         self._p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
 
@@ -84,6 +91,12 @@ class EnvInterface(gym.Env):
 
         self.setup_manager()
 
+    def getRobotMap(self):
+        return self.robotMap
+
+    def getRobotIdByName(self, name):
+        return self.robotMap[name]
+
     def setup_manager(self):
         self._cm = constraint_manager.ConstraintManager(self._p)
         self._fm = frame_manager.FrameManager(self._p, self._fb)
@@ -96,6 +109,9 @@ class EnvInterface(gym.Env):
 
     def get_client_id(self):
         return self._client_id
+
+    def get_shadow_client_id(self):
+        return self._shadow_client_id
 
     def __del__(self):
         self._p.disconnect()

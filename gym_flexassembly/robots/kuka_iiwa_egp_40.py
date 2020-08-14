@@ -20,7 +20,7 @@ import math
 from gym_flexassembly import data as flexassembly_data
 
 class KukaIIWA_EGP40:
-    def __init__(self, pos=[0,0,0.07], orn=[0,0,0,1], urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, variant='7'):
+    def __init__(self, pos=[0,0,0.07], orn=[0,0,0,1], urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, variant='7', shadow_client=-1):
         self._arm_joints = [# "world_iiwa_joint",
                             "iiwa7_joint_1",
                             "iiwa7_joint_2",
@@ -34,6 +34,8 @@ class KukaIIWA_EGP40:
         self._finger_joints = ["SchunkEGP40_Finger1_joint",
                                 "SchunkEGP40_Finger2_joint"
                                 ]
+
+        self._shadow_client = shadow_client
 
 
         self.variant = variant
@@ -67,11 +69,17 @@ class KukaIIWA_EGP40:
     def reset(self):
         if self.variant == '14':
             self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "robots/kuka-iiwa-7-egp-40/model.urdf"), useFixedBase=True)
+            if self._shadow_client > -1:
+                self.shadow_kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "robots/kuka-iiwa-7-egp-40/model.urdf"), useFixedBase=True, physicsClientId=self._shadow_client)
             # flags=p.URDF_USE_INERTIA_FROM_FILE
         else:
             self.kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "robots/kuka-iiwa-7-egp-40/model.urdf"), useFixedBase=True)
+            if self._shadow_client > -1:
+                self.shadow_kukaUid = p.loadURDF(os.path.join(self.urdfRootPath, "robots/kuka-iiwa-7-egp-40/model.urdf"), useFixedBase=True, physicsClientId=self._shadow_client)
 
         p.resetBasePositionAndOrientation(self.kukaUid, self._pos, self._orn)
+        if self._shadow_client > -1:
+            p.resetBasePositionAndOrientation(self.shadow_kukaUid, self._pos, self._orn, physicsClientId=self._shadow_client)
 
         total_joints = p.getNumJoints(self.kukaUid)
         self.motorNames = []
@@ -114,8 +122,22 @@ class KukaIIWA_EGP40:
             print("ERROR: Inconsistent specified gripper finger joint names and actually found joints")
             return
 
+        collisionFilterGroup_kuka = 0x10
+        collisionFilterMask_kuka = 0x1
+        for i in range(p.getNumJoints(self.kukaUid)):
+            p.setCollisionFilterGroupMask(self.kukaUid, i-1, collisionFilterGroup_kuka, collisionFilterMask_kuka)
+            if self._shadow_client > -1:
+                p.setCollisionFilterGroupMask(self.shadow_kukaUid, i-1, collisionFilterGroup_kuka, collisionFilterMask_kuka, physicsClientId=self._shadow_client)
+
+        # Attach F/T sensor
+        p.enableJointForceTorqueSensor(self.kukaUid, 8) # Why 8?
+        # Debug draw F/T sensor
+        # arm_ft_7 = self._p.addUserDebugLine([0, 0, 0], [0, 0, 0], [0.6, 0.3, 0.1], parentObjectUniqueId=self.kukaUid, parentLinkIndex=7)
+
         for i in range(len(self.motorIndices)):
             p.resetJointState(self.kukaUid, self.motorIndices[i], self.cur_q[i])
+            if self._shadow_client > -1:
+                p.resetJointState(self.shadow_kukaUid, self.motorIndices[i], self.cur_q[i], physicsClientId=self._shadow_client)
 
         for i in range(len(self.motorIndicesFinger)):
             p.resetJointState(self.kukaUid, self.motorIndicesFinger[i], 0.01)
@@ -124,6 +146,9 @@ class KukaIIWA_EGP40:
                                     self.motorIndicesFinger[i],
                                     p.POSITION_CONTROL,
                                     targetPosition=0.01)
+            if self._shadow_client > -1:
+                p.resetJointState(self.shadow_kukaUid, self.motorIndicesFinger[i], 0.01, physicsClientId=self._shadow_client)
+                p.setJointMotorControl2(self.shadow_kukaUid, self.motorIndicesFinger[i], p.POSITION_CONTROL, targetPosition=0.01, physicsClientId=self._shadow_client)
 
 
         self.controlMode = "JOINT_IMPEDANCE_CONTROL"
@@ -378,11 +403,11 @@ class KukaIIWA_EGP40:
     #     return Jdot
 
 class KukaIIWA7_EGP40(KukaIIWA_EGP40):
-    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
-        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='7')
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, pos=[0,0,0.07], orn=[0,0,0,1], shadow_client=-1):
+        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='7', pos=pos, orn=orn, shadow_client=shadow_client)
 
 class KukaIIWA14_EGP40(KukaIIWA_EGP40):
-    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
-        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='14')
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, pos=[0,0,0.07], orn=[0,0,0,1], shadow_client=-1):
+        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='14', pos=pos, orn=orn, shadow_client=shadow_client)
 
 __all__ = ['KukaIIWA7_EGP40', 'KukaIIWA14_EGP40']

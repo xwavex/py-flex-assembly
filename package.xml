@@ -63,6 +63,14 @@
   <build_export_depend>cosima_world_state</build_export_depend>
   <exec_depend>cosima_world_state</exec_depend>
 
+  <build_depend>geometry_msgs</build_depend>
+  <build_export_depend>geometry_msgs</build_export_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
+  <build_depend>trajectory_msgs</build_depend>
+  <build_export_depend>trajectory_msgs</build_export_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
+
   
 
   <!-- <build_depend>message_generation</build_depend>

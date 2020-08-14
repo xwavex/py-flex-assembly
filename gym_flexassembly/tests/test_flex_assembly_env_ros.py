@@ -8,6 +8,12 @@ import signal
 
 import rospy
 from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Point
+from geometry_msgs.msg import Quaternion
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+
+from cosima_world_state.srv import RequestTrajectory, RequestTrajectoryResponse
 
 import pybullet as p
 
@@ -15,8 +21,15 @@ from gym_flexassembly.planning import FlexPlanning
 
 import numpy as np
 
+def plan_fnc(req):
+    global planner
+    path = planner.calculatePath([req.goal.position.x, req.goal.position.y, req.goal.position.z], [req.goal.orientation.x,req.goal.orientation.y,req.goal.orientation.z,req.goal.orientation.w])
+    print("Planned to ", [req.goal.position.x, req.goal.position.y, req.goal.position.z])
+    return JointTrajectory()
+
 def main():
     # Load the flex assembly environment
+    # global environment
     environment = FlexAssemblyEnv(stepping=False)
 
     # Disable realtime
@@ -38,18 +51,20 @@ def main():
 
     ### Load plugins ###
     # Load planner
+    global planner
     planner = FlexPlanning(p, environment.getRobots()[0])
 
-    linkWorld = p.getLinkState(environment.getRobots()[0], 6, computeForwardKinematics=1)
+    service_planner = rospy.Service('service_planner', RequestTrajectory, plan_fnc)
+    print("Service Planner created!")
 
+    linkWorld = p.getLinkState(environment.getRobots()[0], 6, computeForwardKinematics=1)
     print("linkWorld = ", linkWorld)
     linkWorldPosition = np.array(linkWorld[0])
     print("linkWorldPosition = ", linkWorldPosition)
-    linkWorldPosition[0] = linkWorldPosition[0] + 0.05
-    print("linkWorldPosition (new) = ", linkWorldPosition)
+    # linkWorldPosition[0] = linkWorldPosition[0] + 0.05
+    # print("linkWorldPosition (new) = ", linkWorldPosition)
 
-    orn = p.getQuaternionFromEuler([0.,-1.57,0.]) # TODO
-    path = planner.calculatePath(linkWorldPosition, linkWorld[1])
+    
 
     while not rospy.is_shutdown():
         if run:

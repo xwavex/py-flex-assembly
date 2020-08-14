@@ -12,7 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   cosima_world_state
-  # message_generation
+  trajectory_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions

@@ -3,29 +3,13 @@
   <name>py_flex_assembly</name>
   <version>0.0.0</version>
   <description>The py_flex_assembly package</description>
-
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
   <maintainer email="dwigand@corlab.de">Dennis Leroy Wigand</maintainer>
-
-
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>LGPLv3</license>
-
-
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
   <!-- <url type="website">http://wiki.ros.org/py_flex_assembly</url> -->
-
-
-  <!-- Author tags are optional, multiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintainers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author email="dwigand@cor-lab.de">Dennis Leroy Wigand</author>
 
 
   <!-- The *depend tags are used to specify dependencies -->
@@ -70,6 +54,10 @@
   <build_depend>trajectory_msgs</build_depend>
   <build_export_depend>trajectory_msgs</build_export_depend>
   <exec_depend>trajectory_msgs</exec_depend>
+  
+  <exec_depend>pybullet-planning</exec_depend>
+  <exec_depend>gym</exec_depend>
+  <exec_depend>pyquaternion</exec_depend>
 
   
 

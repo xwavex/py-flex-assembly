@@ -32,6 +32,10 @@ from pybullet_planning.interfaces.env_manager import create_box
 from pybullet_planning.interfaces.robots.body import get_bodies
 # TODO clean up the imports
 
+import sys
+
+# from pybullet_planning.utils import CLIENT, set_client
+
 class FlexPlanning(object):
     def __init__(self, pybullet, robot):
         self._p = pybullet
@@ -50,10 +54,9 @@ class FlexPlanning(object):
         # Restposes for null space
         self.rp = [0.98, 0.458, 0.31, -2.24, -0.30, 2.66, 2.32, 0.02, 0.02]
 
-    def calculatePath(self, goalPosition, goalOrientation, attachments=[]):
-        # Sync pyBullet bodies
-        self._p.syncBodyInfo()
+        print("Planner initialized for robot with id", robot)
 
+    def calculatePath(self, goalPosition, goalOrientation, attachments=[]):
         # Get all objects from the world and test for obstacles
         self._obstacles = []
         for body in get_bodies():
@@ -67,8 +70,26 @@ class FlexPlanning(object):
         path = planning.plan_joint_motion(self._robot, jt.get_movable_joints(self._robot)[0:7], goalJntPos[0:7], obstacles=self._obstacles, attachments=attachments)
 
         if path is None:
-            print("No plan found")
+            print("\nNo plan found!\n", file=sys.stderr)
         else:
-            print("A motion plan is found!")
+            print("\nA motion plan is found!\n")
 
         return path
+
+    def getInvolvedRobotJoints(self):
+        return jt.get_movable_joints(self._robot)[0:7]
+
+    def getInvolvedRobotJointNames(self):
+        return get_joint_names(self._robot, self.getInvolvedRobotJoints())
+
+    def updateRobotConfiguration(self, robot_id, config):
+        set_joint_positions(robot_id, jt.get_movable_joints(robot_id), config)
+        # print("Update robot " + str(robot_id) + " with", config)
+
+    def updateObjectPoses(self, object_id, pos, orn):
+        for body in get_bodies():
+            if body == object_id:
+                p.resetBasePositionAndOrientation(body, pos, orn)
+                return
+        print("Warning, object not found: " + str(object_id) + "!")
+

@@ -42,6 +42,7 @@ class SpringClamp:
             self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/smartobjects/W_QS_1", "W_QS_1.urdf"), useFixedBase=False, flags = p.URDF_USE_INERTIA_FROM_FILE)
         else:
             self._model_id = p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/smartobjects/W_QS_1", "W_QS_1.urdf"), useFixedBase=False)
+
         p.resetBasePositionAndOrientation(self._model_id, self._pos, self._orn)
 
         # Take care of the spring loaded simulation of the clipping mechanism

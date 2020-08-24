@@ -17,16 +17,20 @@ from cosima_world_state.srv import RequestTrajectory, RequestTrajectoryResponse
 
 import numpy as np
 
-if len(sys.argv) == 4:
+topic = 'flex_planning_ros/plan'
+
+if len(sys.argv) >= 4:
     x = float(sys.argv[1])
     y = float(sys.argv[2])
     z = float(sys.argv[3])
+    if len(sys.argv) == 5:
+        topic = str(sys.argv[4])
 else:
     sys.exit(1)
 
-rospy.wait_for_service('service_planner')
+rospy.wait_for_service(topic)
 try:
-    add_two_ints = rospy.ServiceProxy('service_planner', RequestTrajectory)
+    add_two_ints = rospy.ServiceProxy(topic, RequestTrajectory)
     goal = Pose()
     goal.position.x = x
     goal.position.y = y

@@ -9,6 +9,7 @@ import time
 
 # PYBULLET IMPORTS
 import pybullet as p
+# import pybullet_utils.bullet_client as bc
 import pybullet_data
 
 # GYM IMPORTS
@@ -30,7 +31,9 @@ from gym_flexassembly.constraints import frame_manager
 class EnvInterface(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
-    def __init__(self, gui=True, ros_frame_broadcaster=None):
+    def __init__(self, gui=True, ros_frame_broadcaster=None, direct=False):
+        self.robotMap = {}
+
         self.ros_loaded = False
         # (OPTIONAL) ROS IMPORTS
         try:
@@ -48,7 +51,7 @@ class EnvInterface(gym.Env):
         except ImportError:
             self.ros_loaded = False
         
-        self._client_id = -1;
+        self._client_id = -1
 
         self._timeStep = 1.0 / 1000.0
 
@@ -57,6 +60,7 @@ class EnvInterface(gym.Env):
         self._p = p
 
         self._gui = gui
+        self._direct = direct
 
         self._cm = None
         self._fm = None
@@ -66,7 +70,11 @@ class EnvInterface(gym.Env):
         if self._gui:
             self._client_id = self._p.connect(self._p.GUI_SERVER, options='--background_color_red=1.0 --background_color_green=1.0 --background_color_blue=1.0')
         else:
-            self._client_id = self._p.connect(self._p.SHARED_MEMORY_SERVER)
+            if self._direct:
+                self._client_id = self._p.connect(self._p.DIRECT)
+            else:
+                self._client_id = self._p.connect(self._p.SHARED_MEMORY_SERVER)
+        print("Initialized main pybullet instance with id",self._client_id)
 
         self._p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
 
@@ -94,6 +102,12 @@ class EnvInterface(gym.Env):
         self._cameras = {}
 
         self.setup_manager()
+
+    def getRobotMap(self):
+        return self.robotMap
+
+    def getRobotIdByName(self, name):
+        return self.robotMap[name]
 
     def setup_manager(self):
         self._cm = constraint_manager.ConstraintManager(self._p)

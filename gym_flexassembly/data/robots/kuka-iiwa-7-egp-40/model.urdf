@@ -378,10 +378,25 @@
                 <color rgba="0 0 0 1"/>
             </material>
         </visual>
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <mesh filename="model://schunk-egp-40/meshes/visual/obj/schunk_coact_finger_1.obj" scale="1 1 1" />
+            </geometry>
+            <material name="schunk_coact_finger_1_blue">
+                <color rgba="0 0 0.8 1"/>
+            </material>
+        </visual>
         <collision>
             <origin rpy="0 0 0" xyz="0 0.0005 0.006075" />
             <geometry>
                 <box size="0.006 0.016 0.01215" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0.0005 0.006075" />
+            <geometry>
+                <mesh filename="model://schunk-egp-40/meshes/visual/obj/schunk_coact_finger_1.obj" scale="1 1 1" />
             </geometry>
         </collision>
     </link>
@@ -402,10 +417,25 @@
                 <color rgba="0 0 0 1"/>
             </material>
         </visual>
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <mesh filename="model://schunk-egp-40/meshes/visual/obj/schunk_coact_finger_1.obj" scale="1 1 1" />
+            </geometry>
+            <material name="schunk_coact_finger_1_blue">
+                <color rgba="0 0 0.8 1"/>
+            </material>
+        </visual>
         <collision>
             <origin rpy="0 0 0" xyz="0 0.0005 0.006075" />
             <geometry>
                 <box size="0.006 0.016 0.01215" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0.0005 0.006075" />
+            <geometry>
+                <mesh filename="model://schunk-egp-40/meshes/visual/obj/schunk_coact_finger_1.obj" scale="1 1 1" />
             </geometry>
         </collision>
     </link>

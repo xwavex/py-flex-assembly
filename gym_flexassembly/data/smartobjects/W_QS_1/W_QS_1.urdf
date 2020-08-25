@@ -14,8 +14,8 @@
       <geometry>
 				<mesh filename="W_QS_Main_1.obj" scale="1 1 1"/>
       </geometry>
-      <material name="WS_gray">
-        <color rgba="0.6 0.6 0.6 1"/>
+      <material name="WS_white">
+        <color rgba="1 1 1 1"/>
       </material>
     </visual>
     <collision>
@@ -43,8 +43,8 @@
       <geometry>
 				<mesh filename="W_QS_LeftS_1.obj" scale="1 1 1"/>
       </geometry>
-      <material name="WS_gray">
-        <color rgba="0.6 0.6 0.6 1"/>
+      <material name="WS_blue">
+        <color rgba="0.173 0.545 0.647 1"/>
       </material>
     </visual>
     <collision>
@@ -72,8 +72,8 @@
       <geometry>
 				<mesh filename="W_QS_RightS_1.obj" scale="1 1 1"/>
       </geometry>
-      <material name="WS_gray">
-        <color rgba="0.6 0.6 0.6 1"/>
+      <material name="WS_blue">
+        <color rgba="0.173 0.545 0.647 1"/>
       </material>
     </visual>
     <collision>
@@ -125,8 +125,8 @@
       <geometry>
 				<mesh filename="W_QS_ClipS_1.obj" scale="1 1 1"/>
       </geometry>
-       <material name="WS_red">
-        <color rgba="0.6 0 0 1"/>
+       <material name="WS_blue">
+        <color rgba="0.173 0.545 0.647 1"/>
       </material>
     </visual>
     <collision>
@@ -137,4 +137,3 @@
     </collision>
   </link>
 </robot>
-

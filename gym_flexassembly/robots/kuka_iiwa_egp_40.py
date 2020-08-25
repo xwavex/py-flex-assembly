@@ -35,7 +35,6 @@ class KukaIIWA_EGP40:
                                 "SchunkEGP40_Finger2_joint"
                                 ]
 
-
         self.variant = variant
         self._pos = pos
         self._orn = orn
@@ -113,6 +112,16 @@ class KukaIIWA_EGP40:
         if len(self.motorIndicesFinger) != len(self._finger_joints):
             print("ERROR: Inconsistent specified gripper finger joint names and actually found joints")
             return
+
+        collisionFilterGroup_kuka = 0x10
+        collisionFilterMask_kuka = 0x1
+        for i in range(p.getNumJoints(self.kukaUid)):
+            p.setCollisionFilterGroupMask(self.kukaUid, i-1, collisionFilterGroup_kuka, collisionFilterMask_kuka)
+
+        # Attach F/T sensor
+        p.enableJointForceTorqueSensor(self.kukaUid, 8) # Why 8?
+        # Debug draw F/T sensor
+        # arm_ft_7 = self._p.addUserDebugLine([0, 0, 0], [0, 0, 0], [0.6, 0.3, 0.1], parentObjectUniqueId=self.kukaUid, parentLinkIndex=7)
 
         for i in range(len(self.motorIndices)):
             p.resetJointState(self.kukaUid, self.motorIndices[i], self.cur_q[i])
@@ -378,11 +387,11 @@ class KukaIIWA_EGP40:
     #     return Jdot
 
 class KukaIIWA7_EGP40(KukaIIWA_EGP40):
-    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
-        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='7')
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, pos=[0,0,0.07], orn=[0,0,0,1]):
+        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='7', pos=pos, orn=orn)
 
 class KukaIIWA14_EGP40(KukaIIWA_EGP40):
-    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
-        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='14')
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, pos=[0,0,0.07], orn=[0,0,0,1]):
+        KukaIIWA_EGP40.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='14', pos=pos, orn=orn)
 
 __all__ = ['KukaIIWA7_EGP40', 'KukaIIWA14_EGP40']

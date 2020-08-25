@@ -41,10 +41,9 @@ class FlexAssemblyEnv(EnvInterface):
 
     def __init__(self,
                stepping=True,
-               gui=True):
-        super().__init__(gui)
-
-        self.robotList = []
+               gui=True,
+               direct=False):
+        super().__init__(gui, direct)
 
         self._stepping = stepping
         self._timeStep = 1.0 / 1000.0
@@ -127,27 +126,17 @@ class FlexAssemblyEnv(EnvInterface):
         # Disable rendering
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
 
-        self.kuka7_1 = KukaIIWA7_EGP40()
-        self._p.resetBasePositionAndOrientation(self.kuka7_1.getUUid(), [0,-0.2,0.5], [0,0,0,1])
-        collisionFilterGroup_kuka = 0x10
-        collisionFilterMask_kuka = 0x1
-        for i in range(self._p.getNumJoints(self.kuka7_1.getUUid())):
-            self._p.setCollisionFilterGroupMask(self.kuka7_1.getUUid(), i-1, collisionFilterGroup_kuka, collisionFilterMask_kuka)
-        self._p.enableJointForceTorqueSensor(self.kuka7_1.getUUid(), 8) # Why 8?
-
-        arm_ft_7 = self._p.addUserDebugLine([0, 0, 0], [0, 0, 0], [0.6, 0.3, 0.1], parentObjectUniqueId=self.kuka7_1.getUUid(), parentLinkIndex=7)
+        self.kuka7_1 = KukaIIWA7_EGP40(pos=[0,-0.2,0.5], orn=[0,0,0,1])
 
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
-
-        self.robotList.append(self.kuka7_1.getUUid())
-
-    def getRobots(self):
-        return self.robotList
+        # Store name with as unique identified + "_0" and the id
+        self.robotMap[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
 
     def reset(self):
         self._terminated = False
         self._p.resetSimulation()
+        self.robotList={}
         # self._p.setPhysicsEngineParameter(numSolverIterations=150)
         self._p.setTimeStep(self._timeStep)
         self._p.setGravity(0, 0, -9.81)

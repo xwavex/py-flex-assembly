@@ -62,6 +62,20 @@ class FlexAssemblyEnv(EnvInterface):
 
         self.seed()
 
+        if self.ros_loaded:
+            cam_global_pos = [0, 0, 1.2]
+            cam_global_target_pos = [0, 0, 0]
+            cam_global_up = [0, -1.0, 0]
+            self.cam_global_settings = {
+                    'width': 1280,
+                    'height': 720,
+                    'fov': 65,
+                    'near': 0.16,
+                    'far': 10,
+                    'framerate': 30,
+                    'up': [0, -1.0, 0]}
+            self.cam_global_name = 'global'
+
         self.reset()
 
         # observationDim = len(self.getExtendedObservation())
@@ -74,7 +88,7 @@ class FlexAssemblyEnv(EnvInterface):
         #     action_high = np.array([self._action_bound] * action_dim)
         #     self.action_space = spaces.Box(-action_high, action_high)
         # self.observation_space = spaces.Box(-observation_high, observation_high)
-    
+
 
     def loadEnvironment(self):
         # print("pybullet_data.getDataPath() = " + str(pybullet_data.getDataPath()))
@@ -119,6 +133,12 @@ class FlexAssemblyEnv(EnvInterface):
         workpiece_3_offset_world = [table_offset_world_x + workpiece_3_offset_table_x, table_offset_world_y + workpiece_3_offset_table_y, table_offset_world_z + workpiece_3_offset_table_z]
         workpiece_3 = SpringClamp(pos=workpiece_3_offset_world)
 
+        # Global camera
+        self.cam_global_settings['pos'] = [workpiece_2_offset_world[0], workpiece_2_offset_world[1], workpiece_2_offset_world[2] + 0.6]
+        self.cam_global_settings['target_pos'] = workpiece_2_offset_world
+        realsense_camera_id = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/objects", "RealSense_D435.urdf"), useFixedBase=True)
+        self._p.resetBasePositionAndOrientation(realsense_camera_id, self.cam_global_settings['pos'], [0,0,0,1])
+
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
 
@@ -132,6 +152,14 @@ class FlexAssemblyEnv(EnvInterface):
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
         # Store name with as unique identified + "_0" and the id
         self.robotMap[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
+
+    def loadCameras(self):
+        if not self.ros_loaded:
+            return
+
+        print('Load camera')
+        self.remove_camera(name=self.cam_global_name)
+        self.add_camera(settings=self.cam_global_settings, name=self.cam_global_name)
 
     def reset(self):
         self._terminated = False
@@ -148,6 +176,7 @@ class FlexAssemblyEnv(EnvInterface):
 
         self.loadEnvironment()
         self.loadRobot()
+        self.loadCameras()
 
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "plane.urdf"), [0, 0, -1])
         # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "table/table.urdf"), 0.5000000, 0.00000, -.820000,
@@ -303,7 +332,7 @@ class FlexAssemblyEnv(EnvInterface):
         #     self._observation = self.getExtendedObservation()
         #     return True
         return False
-    
+
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

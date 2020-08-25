@@ -59,11 +59,11 @@
   <exec_depend>gym</exec_depend>
   <exec_depend>pyquaternion</exec_depend>
 
-  
 
-  <!-- <build_depend>message_generation</build_depend>
+
+  <build_depend>message_generation</build_depend>
   <exec_depend>message_runtime</exec_depend>
-  <build_depend>genjava</build_depend> -->
+  <!-- <build_depend>genjava</build_depend> -->
   <!-- genjava_message_artifacts - -verbose -p py_flex_assembly -->
 
 

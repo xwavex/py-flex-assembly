@@ -289,48 +289,6 @@ class FlexAssemblyEnv(EnvInterface):
         return rgb_array
 
     def _termination(self):
-        # state = p.getLinkState(self._kuka.kukaUid, self._kuka.kukaEndEffectorIndex)
-        # actualEndEffectorPos = state[0]
-
-        # #print("self._envStepCounter")
-        # #print(self._envStepCounter)
-        # if (self._terminated or self._envStepCounter > self._maxSteps):
-        #     self._observation = self.getExtendedObservation()
-        #     return True
-
-        # maxDist = 0.005
-        # closestPoints = p.getClosestPoints(self._kuka.trayUid, self._kuka.kukaUid, maxDist)
-
-        # if (len(closestPoints)):  #(actualEndEffectorPos[2] <= -0.43):
-        #     self._terminated = True
-        #     #print("terminating, closing gripper, attempting grasp")
-        #     #start grasp and terminate
-        #     fingerAngle = 0.3
-        #     for i in range(100):
-        #         graspAction = [0, 0, 0.0001, 0, fingerAngle]
-        #         self._kuka.applyAction(graspAction)
-        #         p.stepSimulation()
-        #         fingerAngle = fingerAngle - (0.3 / 100.)
-        #         if (fingerAngle < 0):
-        #             fingerAngle = 0
-
-        #     for i in range(1000):
-        #         graspAction = [0, 0, 0.001, 0, fingerAngle]
-        #         self._kuka.applyAction(graspAction)
-        #         p.stepSimulation()
-        #         blockPos, blockOrn = p.getBasePositionAndOrientation(self.blockUid)
-        #         if (blockPos[2] > 0.23):
-        #             #print("BLOCKPOS!")
-        #             #print(blockPos[2])
-        #             break
-
-        #         state = p.getLinkState(self._kuka.kukaUid, self._kuka.kukaEndEffectorIndex)
-        #         actualEndEffectorPos = state[0]
-        #         if (actualEndEffectorPos[2] > 0.5):
-        #             break
-
-        #     self._observation = self.getExtendedObservation()
-        #     return True
         return False
 
 

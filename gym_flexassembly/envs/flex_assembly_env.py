@@ -1,10 +1,12 @@
-#!/home/dwigand/code/cogimon/CoSimA/pyBullet/vPyBullet/bin/python3
+#!/usr/bin/python3
+
+"""TODO.
+:Author:
+  `Dennis Leroy Wigand <dwigand@cor-lab.de>`
+"""
 
 # SYSTEM IMPORTS
 import os, inspect
-# currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-# print("current_dir=" + currentdir)
-# os.sys.path.insert(0, currentdir)
 
 # UTILITY IMPORTS
 import math
@@ -37,21 +39,19 @@ from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
 from gym_flexassembly.envs.env_interface import EnvInterface
 
 class FlexAssemblyEnv(EnvInterface):
-    metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
+    metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50} # TODO do we need this?
 
     def __init__(self,
                stepping=True,
                gui=True,
-               direct=False):
-        super().__init__(gui, direct)
+               direct=False,
+               use_real_interface=True):
+        super().__init__(gui, direct, use_real_interface=use_real_interface, hz=1000.0)
 
         self._stepping = stepping
-        self._timeStep = 1.0 / 1000.0
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
         self._urdfRoot_flexassembly = flexassembly_data.getDataPath()
         # self._observation = []
-        # self._envStepCounter = 0
-        self._terminated = False
         # self._cam_dist = 1.3
         # self._cam_yaw = 180
         # self._cam_pitch = -40
@@ -62,33 +62,23 @@ class FlexAssemblyEnv(EnvInterface):
 
         self.seed()
 
-        if self.ros_loaded:
+        if self._use_real_interface:
             cam_global_pos = [0, 0, 1.2]
             cam_global_target_pos = [0, 0, 0]
             cam_global_up = [0, -1.0, 0]
-            self.cam_global_settings = {
-                    'width': 1280,
-                    'height': 720,
-                    'fov': 65,
-                    'near': 0.16,
-                    'far': 10,
-                    'framerate': 30,
-                    'up': [0, -1.0, 0]}
+            self.cam_global_settings = {'width': 1280,
+                                        'height': 720,
+                                        'fov': 65,
+                                        'near': 0.16,
+                                        'far': 10,
+                                        'framerate': 30,
+                                        'up': [0, -1.0, 0]}
             self.cam_global_name = 'global'
 
-        self.reset()
+        self.env_reset()
 
-        # observationDim = len(self.getExtendedObservation())
-        # observation_high = np.array([self.largeValObservation] * observationDim)
-        # if (self._isDiscrete):
-        #     self.action_space = spaces.Discrete(7)
-        # else:
-        #     action_dim = 3
-        #     self._action_bound = 1
-        #     action_high = np.array([self._action_bound] * action_dim)
-        #     self.action_space = spaces.Box(-action_high, action_high)
-        # self.observation_space = spaces.Box(-observation_high, observation_high)
-
+        self.set_running(True)
+        self.env_loop()
 
     def loadEnvironment(self):
         # print("pybullet_data.getDataPath() = " + str(pybullet_data.getDataPath()))
@@ -151,57 +141,27 @@ class FlexAssemblyEnv(EnvInterface):
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
         # Store name with as unique identified + "_0" and the id
-        self.robotMap[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
+        self._robot_map[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
 
     def loadCameras(self):
-        if not self.ros_loaded:
+        if not self._use_real_interface:
             return
 
         print('Load camera')
         self.remove_camera(name=self.cam_global_name)
         self.add_camera(settings=self.cam_global_settings, name=self.cam_global_name)
 
-    def reset(self):
-        self._terminated = False
-        self._p.resetSimulation()
-        self.robotList={}
-        # self._p.setPhysicsEngineParameter(numSolverIterations=150)
-        self._p.setTimeStep(self._timeStep)
+    def reset_internal(self):
         self._p.setGravity(0, 0, -9.81)
-
-
-        # TODO how to delete all elements in preface?
-        # Floor SHOULD BE ALWAYS ID 0
-        self._p.loadURDF(os.path.join(flexassembly_data.getDataPath(), "objects/plane_solid.urdf"), useMaximalCoordinates=True) # Brauche ich fuer die hit rays
 
         self.loadEnvironment()
         self.loadRobot()
-        self.loadCameras()
+        # self.loadCameras()
 
-        # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "plane.urdf"), [0, 0, -1])
-        # self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "table/table.urdf"), 0.5000000, 0.00000, -.820000,
-        #         0.000000, 0.000000, 0.0, 1.0)
-        # xpos = 0.55 + 0.12 * random.random()
-        # ypos = 0 + 0.2 * random.random()
-        # ang = 3.14 * 0.5 + 3.1415925438 * random.random()
-        # orn = self._p.getQuaternionFromEuler([0, 0, ang])
-        # self.blockUid = self._p.loadURDF(os.path.join(self._urdfRoot_pybullet, "block.urdf"), xpos, ypos, -0.15,
-        #                         orn[0], orn[1], orn[2], orn[3])
-        # self._kuka = kuka.Kuka(urdfRootPath=self._urdfRoot_pybullet, timeStep=self._timeStep)
-
-        self._envStepCounter = 0
         # Do one simulation step
         self._p.stepSimulation()
-        # self._observation = self.getExtendedObservation()
-        self._observation = [] # TODO
-        return np.array(self._observation)
 
-
-    def __del__(self):
-        self._p.disconnect()
-
-
-    def getExtendedObservation(self):
+    def observation_internal(self):
         self._observation = self._kuka.getObservation()
         gripperState = self._p.getLinkState(self._kuka.kukaUid, self._kuka.kukaGripperIndex)
         gripperPos = gripperState[0]
@@ -236,30 +196,6 @@ class FlexAssemblyEnv(EnvInterface):
         self._observation.extend(list(blockInGripperPosXYEulZ))
         return self._observation
 
-
-    def step(self, action):
-        # for i in range(self._actionRepeat):
-        #     self._kuka.applyAction(action)
-        #     self._p.stepSimulation()
-        #     if self._termination():
-        #         break
-
-        #     self._envStepCounter += 1
-
-        # if self._gui:
-        #     time.sleep(self._timeStep)
-
-        # self._observation = self.getExtendedObservation()
-
-        # self.kuka7_1.getObservation()
-
-        super().step_sim()
-
-        done = self._termination()
-
-        # return np.array(self._observation), done, {}
-        return
-
     def render(self, mode="rgb_array", close=False):
         if mode != "rgb_array":
             return np.array([])
@@ -291,13 +227,18 @@ class FlexAssemblyEnv(EnvInterface):
     def _termination(self):
         return False
 
-
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    def __del__(self):
+        self._p.disconnect()
+
     if parse_version(gym.__version__) < parse_version('0.9.6'):
         _render = render
-        _reset = reset
+        _reset = super().env_reset
         _seed = seed
-        _step = step
+        _step = super().env_step
+
+if __name__ == "__main__":
+    inst = FlexAssemblyEnv(stepping=False)

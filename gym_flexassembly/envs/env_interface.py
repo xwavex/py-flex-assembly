@@ -35,6 +35,8 @@ from gym_flexassembly.constraints import frame
 from gym_flexassembly.constraints import constraint_manager
 from gym_flexassembly.constraints import frame_manager
 
+from gym_flexassembly.smartobjects import camera
+
 class EnvInterface(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
@@ -44,6 +46,8 @@ class EnvInterface(gym.Env):
         '''
         self._use_real_interface = use_real_interface
         self._robot_map = {}
+        self._camera_map = {}
+        self._cameras = {}
         self._node_name = "env"
 
         # self._hz = 1000.0
@@ -59,7 +63,7 @@ class EnvInterface(gym.Env):
                 from sensor_msgs.msg import Image
                 import cv_bridge
 
-                # not dure if we really need this
+                # not sure if we really need this
                 global rospy, cv_bridge, Pose, Image, Header
 
                 # create ros node
@@ -105,8 +109,6 @@ class EnvInterface(gym.Env):
         # self._p.setRealTimeSimulation(1)
         # self._p.stepSimulation()
 
-        self._cameras = {}
-
         # Managers are still WIP!
         self.setup_manager()
 
@@ -146,6 +148,9 @@ class EnvInterface(gym.Env):
         '''
         self.step_internal()
 
+        for v in self._cameras.values():
+            v.update()
+
         if self._run:
             self._p.stepSimulation()
 
@@ -160,6 +165,8 @@ class EnvInterface(gym.Env):
         self._p.resetSimulation()
         # TODO overrride the server?
         self._robot_map = {}
+        self._camera_map = {}
+        self._cameras = {}
         # TODO trigger a reset message
         self._p.setTimeStep(self._timeStep)
         self._p.setGravity(0, 0, -9.81)
@@ -174,6 +181,12 @@ class EnvInterface(gym.Env):
             print("### Initializing DigitalTwinFlexAssembly ###")
             for k,v in rospy.get_param("robot_map").items():
                 print("\t> robot",k,"with id",v)
+            print("\n")
+
+            # Upload the loaded camera to parameter server
+            rospy.set_param("camera_map", self.getCameraMap())
+            for k,v in rospy.get_param("camera_map").items():
+                print("\t> camera",k,"with id",v)
             print("\n")
 
             self.setupRosCommunication()
@@ -300,73 +313,14 @@ class EnvInterface(gym.Env):
     def remove_camera(self, name):
         if name not in self._cameras:
             return
-
-        self._cameras[name]['stop_flag'] = True
-        self._cameras[name]['thread'].join()
+        print("remove camera " + str(name))
+        self._cameras[name].terminate()
         del self._cameras[name]
     
-    def add_camera(self, settings, name):
+    def add_camera(self, settings, name, model_id):
         if name in self._cameras:
             raise ValueError('Camera[%s] already exists!' % name)
+        self._cameras[name] = camera.Camera(self._p, settings, name, model_id, use_real_interface=self._use_real_interface)
 
-        self._cameras[name] = {}
-        self._cameras[name]['settings'] = settings
-        self._cameras[name]['stop_flag'] = False
-        def thread_func():
-            pub_depth = rospy.Publisher('/camera/' + name + '/depth/image_raw', Image, queue_size=10)
-            pub_color = rospy.Publisher('/camera/' + name + '/color/image_raw', Image, queue_size=10)
-
-            bridge = cv_bridge.CvBridge()
-
-            rate = rospy.Rate(settings['framerate'])
-            while not self._cameras[name]['stop_flag']:
-                # get a new camera image
-                view_matrix = self._p.computeViewMatrix(settings['pos'],
-                                                        settings['target_pos'],
-                                                        settings['up'])
-                projection_matrix = self._p.computeProjectionMatrixFOV(settings['fov'],
-                                                                       settings['width'] / settings['height'],
-                                                                       settings['near'],
-                                                                       settings['far'])
-                try: 
-                    _, _, rgba, depth_buffer, _ = self._p.getCameraImage(settings['width'],
-                                                                         settings['height'],
-                                                                         view_matrix,
-                                                                         projection_matrix,
-                                                                         shadow=True,
-                                                                         renderer=self._p.ER_BULLET_HARDWARE_OPENGL)
-                except Exception as x:
-                    # lost connection to pybullet server so quit
-                    break
-
-                near = settings['near']
-                far = settings['far']
-                depth = far * near / (far - (far - near) * depth_buffer)
-                rgb = rgba[:, :, :3]
-
-                # create a header for the messages
-                header = Header()
-                header.stamp = rospy.Time.now()
-
-                try:
-                    img_depth = bridge.cv2_to_imgmsg(depth, 'passthrough')
-                    img_color = bridge.cv2_to_imgmsg(rgb, 'passthrough')
-                except cv_bridge.CvBridgeError as e:
-                    print('Could not convert CV image to ROS msg: ' + str(e))
-
-                # publish the images
-                img_depth.header = header
-                img_depth.header.frame_id = 'depth_image'
-                pub_depth.publish(img_depth)
-
-                img_color.header = header
-                img_color.header.frame_id = 'color_image'
-                pub_color.publish(img_color)
-
-                rate.sleep()
-
-            pub_color.unregister()
-            pub_depth.unregister()
-
-        self._cameras[name]['thread'] = threading.Thread(target=thread_func, daemon=True)
-        self._cameras[name]['thread'].start()
+    def getCameraMap(self):
+        return self._camera_map

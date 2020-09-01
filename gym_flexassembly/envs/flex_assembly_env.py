@@ -62,23 +62,18 @@ class FlexAssemblyEnv(EnvInterface):
 
         self.seed()
 
-        if self._use_real_interface:
-            cam_global_pos = [0, 0, 1.2]
-            cam_global_target_pos = [0, 0, 0]
-            cam_global_up = [0, -1.0, 0]
-            self.cam_global_settings = {'width': 1280,
-                                        'height': 720,
-                                        'fov': 65,
-                                        'near': 0.16,
-                                        'far': 10,
-                                        'framerate': 30,
-                                        'up': [0, -1.0, 0]}
-            self.cam_global_name = 'global'
+        self.cam_global_settings = {'width': 1280,
+                                    'height': 720,
+                                    'fov': 65,
+                                    'near': 0.16,
+                                    'far': 10,
+                                    'framerate': 30,
+                                    'up': [0, -1.0, 0]}
 
         self.env_reset()
 
-        self.set_running(True)
-        self.env_loop()
+        self.set_running(True) # TODO
+        self.env_loop() # TODO
 
     def loadEnvironment(self):
         # print("pybullet_data.getDataPath() = " + str(pybullet_data.getDataPath()))
@@ -125,9 +120,13 @@ class FlexAssemblyEnv(EnvInterface):
 
         # Global camera
         self.cam_global_settings['pos'] = [workpiece_2_offset_world[0], workpiece_2_offset_world[1], workpiece_2_offset_world[2] + 0.6]
+        self.cam_global_settings['orn'] = [0,0,0,1]
         self.cam_global_settings['target_pos'] = workpiece_2_offset_world
         realsense_camera_id = self._p.loadURDF(os.path.join(self._urdfRoot_flexassembly+"/objects", "RealSense_D435.urdf"), useFixedBase=True)
-        self._p.resetBasePositionAndOrientation(realsense_camera_id, self.cam_global_settings['pos'], [0,0,0,1])
+        self._p.resetBasePositionAndOrientation(realsense_camera_id, self.cam_global_settings['pos'], self.cam_global_settings['orn'])
+        # tmp_name = str(self._p.getBodyInfo(realsense_camera_id)[1].decode()) + "_0"
+        tmp_name = "global"
+        self._camera_map[tmp_name] = realsense_camera_id
 
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
@@ -146,17 +145,17 @@ class FlexAssemblyEnv(EnvInterface):
     def loadCameras(self):
         if not self._use_real_interface:
             return
-
-        print('Load camera')
-        self.remove_camera(name=self.cam_global_name)
-        self.add_camera(settings=self.cam_global_settings, name=self.cam_global_name)
+        
+        for k,v in self._camera_map.items():
+            self.remove_camera(name=k)
+            self.add_camera(settings=self.cam_global_settings, name=k, model_id=v)
 
     def reset_internal(self):
         self._p.setGravity(0, 0, -9.81)
 
         self.loadEnvironment()
         self.loadRobot()
-        # self.loadCameras()
+        self.loadCameras()
 
         # Do one simulation step
         self._p.stepSimulation()
@@ -197,6 +196,7 @@ class FlexAssemblyEnv(EnvInterface):
         return self._observation
 
     def render(self, mode="rgb_array", close=False):
+        return np.array([]) # TODO
         if mode != "rgb_array":
             return np.array([])
 

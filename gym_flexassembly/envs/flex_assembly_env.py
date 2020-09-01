@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TODO.
+""" MAIN: Environment for the clamp assembly scenario.
 :Author:
   `Dennis Leroy Wigand <dwigand@cor-lab.de>`
 """

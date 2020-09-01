@@ -67,9 +67,9 @@ class Camera:
 
                 self._rate = rospy.Rate(self._settings['framerate'])
 
-                print("\n\t> Initialized camera " + str(self._name) + " depth image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/depth/image_raw\n")
+                print("\n\t> Initialized camera " + str(self._name) + " depth image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/depth/image_raw publisher\n")
 
-                print("\n\t> Initialized camera " + str(self._name) + " color image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/color/image_raw\n")
+                print("\n\t> Initialized camera " + str(self._name) + " color image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/color/image_raw publisher\n")
 
                 def thread_func():
                     while not self._terminate_thread:

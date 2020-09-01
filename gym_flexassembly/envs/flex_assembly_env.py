@@ -32,6 +32,7 @@ from gym_flexassembly import data as flexassembly_data
 # FLEX ASSEMBLY ROBOT IMPORTS
 from gym_flexassembly.robots.kuka_iiwa import KukaIIWA, KukaIIWA7, KukaIIWA14
 from gym_flexassembly.robots.kuka_iiwa_egp_40 import KukaIIWA_EGP40, KukaIIWA7_EGP40
+from gym_flexassembly.robots.prismatic_2_finger_gripper_plugin import Prismatic2FingerGripperPlugin
 
 # FLEX ASSEMBLY SMARTOBJECTS IMPORTS
 from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
@@ -142,6 +143,9 @@ class FlexAssemblyEnv(EnvInterface):
         # Store name with as unique identified + "_0" and the id
         self._robot_map[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
 
+        # Load gripper
+        self.kuka7_1_egp = Prismatic2FingerGripperPlugin(self.kuka7_1.getUUid(), "gripper1", "SchunkEGP40_Finger1_joint", "SchunkEGP40_Finger2_joint")
+
     def loadCameras(self):
         if not self._use_real_interface:
             return
@@ -149,6 +153,9 @@ class FlexAssemblyEnv(EnvInterface):
         for k,v in self._camera_map.items():
             self.remove_camera(name=k)
             self.add_camera(settings=self.cam_global_settings, name=k, model_id=v)
+
+    def step_internal(self):
+        self.kuka7_1_egp.update()
 
     def reset_internal(self):
         self._p.setGravity(0, 0, -9.81)

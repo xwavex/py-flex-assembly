@@ -1,4 +1,5 @@
-"""TODO.
+""" Simulating a 2 finger prismatic gripper.
+    Connect to a spawned model and supply the names of the two finger links.
 :Author:
   `Dennis Leroy Wigand <dwigand@cor-lab.de>`
 """

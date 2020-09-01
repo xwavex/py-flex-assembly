@@ -80,16 +80,16 @@ class FlexPlanningROS(object):
         self.service_planner = rospy.Service(name+'/plan', RequestTrajectory, self.plan_fnc)
 
         # Create service client to retrieve the joint angles and robot base pose from the digital twin
-        print("Waiting for service dt/get_object_poses...")
-        rospy.wait_for_service("dt/get_object_poses")
-        self.client_get_object_poses = rospy.ServiceProxy("dt/get_object_poses", RequestObjectsOfInterest)
-        print(" > Initialized client for dt/get_object_poses")
+        print("Waiting for service env/get_object_poses...")
+        rospy.wait_for_service("env/get_object_poses")
+        self.client_get_object_poses = rospy.ServiceProxy("env/get_object_poses", RequestObjectsOfInterest)
+        print(" > Initialized client for env/get_object_poses")
 
         # Create service client to retrieve the clamp poses from the digital twin
-        print("Waiting for service dt/get_robot_joints_state...")
-        rospy.wait_for_service("dt/get_robot_joints_state")
-        self.client_get_robot_joints_state = rospy.ServiceProxy("dt/get_robot_joints_state", RequestJointState)
-        print(" > Initialized client for dt/get_robot_joints_state")
+        print("Waiting for service env/get_robot_joints_state...")
+        rospy.wait_for_service("env/get_robot_joints_state")
+        self.client_get_robot_joints_state = rospy.ServiceProxy("env/get_robot_joints_state", RequestJointState)
+        print(" > Initialized client for env/get_robot_joints_state")
 
         print("\n > Initialized FlexPlanningROS with\n")
         print("\t planning service on: "+name+"/plan\n")
@@ -108,7 +108,7 @@ class FlexPlanningROS(object):
                 self.planner.updateObjectPoses(int(op.name), [op.pose.pose.position.x, op.pose.pose.position.y, op.pose.pose.position.z], [op.pose.pose.orientation.x, op.pose.pose.orientation.y, op.pose.pose.orientation.z, op.pose.pose.orientation.w])
 
         except rospy.ServiceException as e:
-            print("Service call dt/get_object_poses failed: %s"%e)
+            print("Service call env/get_object_poses failed: %s"%e)
 
         # Retrieve the object i.e. clamp poses from the digital twin
         for robot_id in self.robotMap.values():
@@ -118,7 +118,7 @@ class FlexPlanningROS(object):
                 self.planner.updateRobotConfiguration(robot_id, robot_joints_state.state.position)
 
             except rospy.ServiceException as e:
-                print("Service call dt/get_robot_joints_state for robot_id " + str(robot_id) + " failed: %s"%e)
+                print("Service call env/get_robot_joints_state for robot_id " + str(robot_id) + " failed: %s"%e)
 
         print("Planning to ", [req.goal.position.x, req.goal.position.y, req.goal.position.z])
         path = self.planner.calculatePath([req.goal.position.x, req.goal.position.y, req.goal.position.z], [req.goal.orientation.x,req.goal.orientation.y,req.goal.orientation.z,req.goal.orientation.w])

@@ -68,7 +68,7 @@ class FlexAssemblyEnv(EnvInterface):
                                     'fov': 65,
                                     'near': 0.16,
                                     'far': 10,
-                                    'framerate': 30,
+                                    'framerate': 5,
                                     'up': [0, -1.0, 0]}
 
         self.env_reset()

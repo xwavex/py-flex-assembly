@@ -32,8 +32,7 @@ class Camera:
 
         self._start_time = perf_counter()
 
-        # self._wait_frame_rate = 1.0 / self._settings['framerate']
-        self._wait_frame_rate = 1.0 / 5.0
+        self._wait_frame_rate = 1.0 / self._settings['framerate']
 
         self._view_matrix = self._p.computeViewMatrix(self._settings['pos'],
                                                     self._settings['target_pos'],

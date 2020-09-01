@@ -13,6 +13,7 @@ import math
 import numpy as np
 import random
 import time
+import sys
 
 # PYBULLET IMPORTS
 import pybullet as p
@@ -40,16 +41,15 @@ from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
 from gym_flexassembly.envs.env_interface import EnvInterface
 
 class FlexAssemblyEnv(EnvInterface):
-    metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50} # TODO do we need this?
+    metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50} # TODO do we need this?)
 
     def __init__(self,
                stepping=True,
                gui=True,
                direct=False,
                use_real_interface=True):
-        super().__init__(gui, direct, use_real_interface=use_real_interface, hz=1000.0)
+        super().__init__(gui, direct, use_real_interface=use_real_interface, hz=1000.0, stepping=stepping)
 
-        self._stepping = stepping
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
         self._urdfRoot_flexassembly = flexassembly_data.getDataPath()
         # self._observation = []
@@ -73,7 +73,6 @@ class FlexAssemblyEnv(EnvInterface):
 
         self.env_reset()
 
-        self.set_running(True) # TODO
         self.env_loop() # TODO
 
     def loadEnvironment(self):
@@ -248,4 +247,15 @@ class FlexAssemblyEnv(EnvInterface):
         _step = super().env_step
 
 if __name__ == "__main__":
-    inst = FlexAssemblyEnv(stepping=False)
+    tmp = ""
+    if len(sys.argv) == 2:
+        tmp = str(sys.argv[1])
+    elif len(sys.argv) > 2:
+        print("Invalid arguments!", file=sys.stderr)
+        print("Usage: python3 -m gym_flexassembly.planning.flex_planning_ros [extrigger]\n")
+        sys.exit(1)
+
+    if tmp == "extrigger":
+        inst = FlexAssemblyEnv(stepping=False)
+    else:
+        inst = FlexAssemblyEnv(stepping=True)

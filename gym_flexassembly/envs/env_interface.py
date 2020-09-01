@@ -40,10 +40,11 @@ from gym_flexassembly.smartobjects import camera
 class EnvInterface(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
-    def __init__(self, gui=True, ros_frame_broadcaster=None, direct=False, use_real_interface=True, hz=250.0):
+    def __init__(self, gui=True, ros_frame_broadcaster=None, direct=False, use_real_interface=True, hz=250.0, stepping=False):
         ''' Initialize the base class for the environments.
             >>> Using use_real_interface the ros interfaces are exposed that the real system will utilize.
         '''
+        self._stepping = stepping
         self._use_real_interface = use_real_interface
         self._robot_map = {}
         self._camera_map = {}
@@ -111,6 +112,8 @@ class EnvInterface(gym.Env):
 
         # Managers are still WIP!
         self.setup_manager()
+
+        self.set_running(self._stepping)
 
     def env_observation(self):
         ''' Provide the observation of the scenario.

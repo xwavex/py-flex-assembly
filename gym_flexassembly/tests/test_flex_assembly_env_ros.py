@@ -1,4 +1,4 @@
-#!/home/dwigand/code/cogimon/CoSimA/pyBullet/vPyBullet/bin/python3
+#!/usr/bin/python3
 import os
 
 from gym_flexassembly.envs.flex_assembly_env import FlexAssemblyEnv
@@ -69,6 +69,10 @@ class DigitalTwinFlexAssembly(object):
 
         print("\n############################################\n")
 
+        # ######################### TODO Plugins
+        # Gripper plugin
+        gripper_1 = Prismatic2FingerGripperPlugin(self.environment.getRobotMap()[""], finger_1_joint_name, finger_2_joint_name)
+
         while not rospy.is_shutdown():
             # if run:
                 # # Publish (debug) robot joint states
@@ -83,7 +87,8 @@ class DigitalTwinFlexAssembly(object):
                 #         msg.velocity.append(0.0)
                 #         msg.effort.append(0.0)
 
-            p.stepSimulation()
+            # p.stepSimulation() # Only use this is we are not triggered externally...
+            gripper_1.update()
 
             rate.sleep()
         try:

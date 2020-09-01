@@ -59,6 +59,9 @@
   <exec_depend>gym</exec_depend>
   <exec_depend>pyquaternion</exec_depend>
 
+  <exec_depend>cv-bridge</exec_depend>
+  <exec_depend>vision-opencv</exec_depend>
+  <exec_depend>vision-msgs</exec_depend>
 
 
   <build_depend>message_generation</build_depend>

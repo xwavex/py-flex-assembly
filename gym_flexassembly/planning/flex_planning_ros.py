@@ -61,10 +61,12 @@ from cosima_world_state.srv import RequestObjectsOfInterest, RequestObjectsOfInt
 from cosima_world_state.srv import RequestTrajectory, RequestTrajectoryResponse
 from cosima_world_state.srv import RequestJointState, RequestJointStateResponse
 
+from klampt.model import trajectory
+
 class FlexPlanningROS(object):
     def __init__(self, name="flex_planning_ros"):
         # Load the scenario
-        self.environment = FlexAssemblyEnv(stepping=False, gui=False, direct=True) # For debuging visualization turn gui=True on.
+        self.environment = FlexAssemblyEnv(stepping=False, gui=False, direct=True, use_real_interface=False, static=True) # For debuging visualization turn gui=True on.
         p.setRealTimeSimulation(0)
         p.setTimeStep(0.001)
 
@@ -91,6 +93,10 @@ class FlexPlanningROS(object):
         self.client_get_robot_joints_state = rospy.ServiceProxy("env/get_robot_joints_state", RequestJointState)
         print(" > Initialized client for env/get_robot_joints_state")
 
+        # Create publisher for trajectory
+        self.pub_traj = rospy.Publisher(name+'/traj_setpoints', JointTrajectoryPoint, queue_size=1)
+        print(" > Initialized publisher on " + name + "/traj_setpoints")
+
         print("\n > Initialized FlexPlanningROS with\n")
         print("\t planning service on: "+name+"/plan\n")
         print("\nRunning... (Ctrl-c to exit)\n")
@@ -106,7 +112,6 @@ class FlexPlanningROS(object):
             object_poses = self.client_get_object_poses()
             for op in object_poses.objects:
                 self.planner.updateObjectPoses(int(op.name), [op.pose.pose.position.x, op.pose.pose.position.y, op.pose.pose.position.z], [op.pose.pose.orientation.x, op.pose.pose.orientation.y, op.pose.pose.orientation.z, op.pose.pose.orientation.w])
-
         except rospy.ServiceException as e:
             print("Service call env/get_object_poses failed: %s"%e)
 
@@ -126,7 +131,35 @@ class FlexPlanningROS(object):
             print("No path returned!", file=sys.stderr)
             return None
 
-        print("\n\nPATH:",path)
+        # print("\n\nPATH:",path)
+
+        milestones=[]
+        for entry in path:
+            milestones.append(list(entry))
+
+        print("\n\nPATH:",milestones)
+
+        
+
+        traj = trajectory.Trajectory(milestones=milestones)
+        traj_timed = trajectory.path_to_trajectory(traj,vmax=2,amax=4)
+        traj = traj_timed
+        dt = 0.01  #approximately a 100Hz control loop
+        t0 = time.time()
+        while True:
+            t = time.time()-t0
+            if t > traj.endTime():
+                break
+            qklampt = traj.eval(t)
+            dqklampt = traj.eval(t)
+            qrobot = self.convert_klampt_config(qklampt)
+            dqrobot = self.convert_klampt_velocity(dqklampt)
+            # SEND
+            jt_tmp = JointTrajectoryPoint(positions=qrobot, velocities=dqrobot)
+            self.pub_traj.publish(jt_tmp)
+            # 
+            time.sleep(dt)
+
 
         jt = JointTrajectory()
         jt.header.stamp = rospy.Time.now()
@@ -141,7 +174,24 @@ class FlexPlanningROS(object):
         for entry in path:
             # jt.points.append(JointTrajectoryPoint(positions=joints_pos, velocities=[0]*num_involved_joints, time_from_start=rospy.Duration(0.0)))
             jt.points.append(JointTrajectoryPoint(positions=entry, velocities=[0]*num_involved_joints)) # TODO time_from_start
+            
         return jt
+
+    def convert_klampt_config(self, q):
+        """Converts klampt config to my robot's config, e.g., extract DOFs,
+        convert units, account for joint offsets.
+
+        Right now, does a straight pass-through.
+        """
+        return q
+
+    def convert_klampt_velocity(self, dq):
+        """Converts klampt velocity to my robot's velocity, e.g., extract DOFs,
+        convert units.
+
+        Right now, does a straight pass-through.
+        """
+        return dq
 
 if __name__ == "__main__":
     topic="flex_planning_ros"

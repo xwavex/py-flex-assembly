@@ -47,8 +47,9 @@ class FlexAssemblyEnv(EnvInterface):
                stepping=True,
                gui=True,
                direct=False,
-               use_real_interface=True):
-        super().__init__(gui, direct, use_real_interface=use_real_interface, hz=1000.0, stepping=stepping)
+               use_real_interface=True,
+               static=False):
+        super().__init__(gui, direct, use_real_interface=use_real_interface, hz=1000.0, stepping=stepping, static=static)
 
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
         self._urdfRoot_flexassembly = flexassembly_data.getDataPath()
@@ -72,8 +73,8 @@ class FlexAssemblyEnv(EnvInterface):
                                     'up': [0, -1.0, 0]}
 
         self.env_reset()
-
-        self.env_loop() # TODO
+        if not static:
+            self.env_loop() # TODO
 
     def loadEnvironment(self):
         # print("pybullet_data.getDataPath() = " + str(pybullet_data.getDataPath()))
@@ -143,7 +144,7 @@ class FlexAssemblyEnv(EnvInterface):
         self._robot_map[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
 
         # Load gripper
-        self.kuka7_1_egp = Prismatic2FingerGripperPlugin(self.kuka7_1.getUUid(), "gripper1", "SchunkEGP40_Finger1_joint", "SchunkEGP40_Finger2_joint")
+        self.kuka7_1_egp = Prismatic2FingerGripperPlugin(self.kuka7_1.getUUid(), "gripper1", "SchunkEGP40_Finger1_joint", "SchunkEGP40_Finger2_joint", use_real_interface=self._use_real_interface)
 
     def loadCameras(self):
         if not self._use_real_interface:

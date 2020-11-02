@@ -14,7 +14,6 @@ from geometry_msgs.msg import Quaternion
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from cosima_world_state.srv import RequestTrajectory, RequestTrajectoryResponse
 
-
 import numpy as np
 
 topic = 'flex_planning_ros/plan'

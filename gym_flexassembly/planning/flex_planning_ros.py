@@ -126,40 +126,49 @@ class FlexPlanningROS(object):
                 print("Service call env/get_robot_joints_state for robot_id " + str(robot_id) + " failed: %s"%e)
 
         print("Planning to ", [req.goal.position.x, req.goal.position.y, req.goal.position.z])
-        path = self.planner.calculatePath([req.goal.position.x, req.goal.position.y, req.goal.position.z], [req.goal.orientation.x,req.goal.orientation.y,req.goal.orientation.z,req.goal.orientation.w])
+        path, goalposjoint = self.planner.calculatePath([req.goal.position.x, req.goal.position.y, req.goal.position.z], [req.goal.orientation.x,req.goal.orientation.y,req.goal.orientation.z,req.goal.orientation.w])
         if not path:
             print("No path returned!", file=sys.stderr)
             return None
 
-        # print("\n\nPATH:",path)
+        print("\n\nPATH:",path)
 
         milestones=[]
         for entry in path:
             milestones.append(list(entry))
 
-        print("\n\nPATH:",milestones)
+        print("\n\nMILE:",milestones)
 
+        # milestones.append(list(goalposjoint))
         
 
         traj = trajectory.Trajectory(milestones=milestones)
         traj_timed = trajectory.path_to_trajectory(traj,vmax=2,amax=4)
         traj = traj_timed
         dt = 0.01  #approximately a 100Hz control loop
-        t0 = time.time()
-        while True:
-            t = time.time()-t0
-            if t > traj.endTime():
-                break
-            qklampt = traj.eval(t)
-            dqklampt = traj.eval(t)
-            qrobot = self.convert_klampt_config(qklampt)
-            dqrobot = self.convert_klampt_velocity(dqklampt)
-            # SEND
-            jt_tmp = JointTrajectoryPoint(positions=qrobot, velocities=dqrobot)
-            self.pub_traj.publish(jt_tmp)
-            # 
-            time.sleep(dt)
+        # t0 = time.time()
+        # while True:
+        #     t = time.time()-t0
+        #     if t > traj.endTime():
+        #         break
+        #     qklampt = traj.eval(t)
+        #     dqklampt = traj.eval(t)
+        #     qrobot = self.convert_klampt_config(qklampt)
+        #     dqrobot = self.convert_klampt_velocity(dqklampt)
+        #     # SEND
+        #     jt_tmp = JointTrajectoryPoint(positions=qrobot, velocities=dqrobot)
+        #     self.pub_traj.publish(jt_tmp)
+        #     # 
+        #     time.sleep(dt)
 
+
+        for entry in path:
+            jt_tmp = JointTrajectoryPoint(positions=list(entry), velocities=[0,0,0,0,0,0,0])
+            self.pub_traj.publish(jt_tmp)
+            time.sleep(dt)
+        
+        jt_tmp = JointTrajectoryPoint(positions=list(goalposjoint), velocities=[0,0,0,0,0,0,0])
+        self.pub_traj.publish(jt_tmp)
 
         jt = JointTrajectory()
         jt.header.stamp = rospy.Time.now()

@@ -137,13 +137,15 @@ class FlexAssemblyEnv(EnvInterface):
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
 
         self.kuka7_1 = KukaIIWA7_EGP40(pos=[0,-0.2,0.5], orn=[0,0,0,1])
+        # self.kuka7_1 = KukaIIWA7(pos=[0,-0.2,0.5], orn=[0,0,0,1])
 
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
         # Store name with as unique identified + "_0" and the id
         self._robot_map[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
 
-        # Load gripper
+        # # Load gripper
+        self.kuka7_1_egp = None
         self.kuka7_1_egp = Prismatic2FingerGripperPlugin(self.kuka7_1.getUUid(), "gripper1", "SchunkEGP40_Finger1_joint", "SchunkEGP40_Finger2_joint", use_real_interface=self._use_real_interface)
 
     def loadCameras(self):
@@ -155,7 +157,8 @@ class FlexAssemblyEnv(EnvInterface):
             self.add_camera(settings=self.cam_global_settings, name=k, model_id=v)
 
     def step_internal(self):
-        self.kuka7_1_egp.update()
+        if self.kuka7_1_egp:
+            self.kuka7_1_egp.update()
 
     def reset_internal(self):
         self._p.setGravity(0, 0, -9.81)

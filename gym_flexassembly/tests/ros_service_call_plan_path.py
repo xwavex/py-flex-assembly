@@ -37,7 +37,7 @@ try:
 
     goal.orientation.x = 0
     goal.orientation.y = 1
-    goal.orientation.x = 0
+    goal.orientation.z = 0
     goal.orientation.w = 0
     resp1 = add_two_ints(goal)
 except rospy.ServiceException as e:

@@ -306,10 +306,23 @@
     </collision>
   </link>
 
-  <joint name="iiwa7_joint_ee" type="fixed">
+  <!-- <joint name="iiwa7_joint_ee" type="fixed">
     <parent link="iiwa_link_7"/>
     <child link="iiwa7_link_ee"/>
-    <origin xyz="0 0 0.126" rpy="0 0 0"/>
+    <origin xyz="0 0 0.06" rpy="0 0 0"/>
+  </joint> -->
+
+  <joint name="iiwa7_joint_ft_sensor" type="fixed">
+    <parent link="iiwa_link_7"/>
+    <child link="ft_sensor"/>
+    <!-- <origin xyz="0 0 0.059" rpy="3.14159265359 0 -1.57079632679" /> -->
+    <origin xyz="0 0 0.059" rpy="0 0 0" />
+  </joint>
+
+  <joint name="iiwa7_joint_ee" type="fixed">
+    <parent link="ft_sensor"/>
+    <child link="iiwa7_link_ee"/>
+    <origin xyz="0 0 0.01" rpy="0 0 0"/>
   </joint>
 
   <!-- Load Gazebo lib and set the robot namespace -->
@@ -445,6 +458,35 @@
     </actuator>
   </transmission>
 
+  <!-- Gamma FT sensor -->
+  <!-- https://github.com/fsuarez6/netft/blob/master/netft_description/urdf/ati_gamma.xacro -->
+  <!-- The height (Z) of the denso-gamma coupler is 10mm -->
+  <!-- The Z of the sensor is 28.6mm but the reference frame is at 14mm -->
+  <!-- That's why we first translate the FT sensor 24mm -->
+  <link name="ft_sensor">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0.52359877559" />
+      <geometry>
+        <mesh filename="model://ati-gamma/meshes/ati_gamma.stl"/>
+      </geometry>
+      <material name="aluminium">
+        <color rgba="0.678 0.698 0.741 1.0" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0.52359877559" />
+      <geometry>
+        <mesh filename="model://ati-gamma/meshes/ati_gamma.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="9.396e-4  0.017  -7.545e-4" rpy="0 0 0" />
+      <mass value="0.215" />
+      <!-- mass: 0.255 ? from https://github.com/ubi-agni/ati_sensor_description/blob/master/robots/sensor_types.yaml#L6 -->
+      <inertia ixx="1.055e-4" ixy="-7.262e-7" ixz="6.186e-6" iyy="1.7e-4" iyz="6.529e-7" izz="1.076e-4" />
+    </inertial>
+  </link>
+
   <!-- SCHUNK EGP 40 EEF -->
   <!-- Base -->
   <link name="iiwa7_link_ee">
@@ -469,6 +511,7 @@
       </geometry>
     </collision>
   </link>
+
 
   <!-- Finger 1 -->
   <link name="SchunkEGP40_Finger1_link">

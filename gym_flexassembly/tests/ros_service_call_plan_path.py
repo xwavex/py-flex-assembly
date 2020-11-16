@@ -14,7 +14,6 @@ from geometry_msgs.msg import Quaternion
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from cosima_world_state.srv import RequestTrajectory, RequestTrajectoryResponse
 
-
 import numpy as np
 
 topic = 'flex_planning_ros/plan'
@@ -38,7 +37,7 @@ try:
 
     goal.orientation.x = 0
     goal.orientation.y = 1
-    goal.orientation.x = 0
+    goal.orientation.z = 0
     goal.orientation.w = 0
     resp1 = add_two_ints(goal)
 except rospy.ServiceException as e:

@@ -107,15 +107,16 @@ class FlexPlanningROS(object):
         print("Shutting down...")
 
     def plan_fnc(self, req):
-        # Retrieve the object i.e. clamp poses from the digital twin
-        try:
-            object_poses = self.client_get_object_poses()
-            for op in object_poses.objects:
-                self.planner.updateObjectPoses(int(op.name), [op.pose.pose.position.x, op.pose.pose.position.y, op.pose.pose.position.z], [op.pose.pose.orientation.x, op.pose.pose.orientation.y, op.pose.pose.orientation.z, op.pose.pose.orientation.w])
-        except rospy.ServiceException as e:
-            print("Service call env/get_object_poses failed: %s"%e)
+        # # Retrieve the object i.e. clamp poses from the digital twin
+        # try:
+        #     object_poses = self.client_get_object_poses()
+        #     for op in object_poses.objects:
+        #         self.planner.updateObjectPoses(int(op.name), [op.pose.pose.position.x, op.pose.pose.position.y, op.pose.pose.position.z], [op.pose.pose.orientation.x, op.pose.pose.orientation.y, op.pose.pose.orientation.z, op.pose.pose.orientation.w])
+        # except rospy.ServiceException as e:
+        #     print("Service call env/get_object_poses failed: %s"%e)
 
-        # Retrieve the object i.e. clamp poses from the digital twin
+        # Retrieve the robot joint state # TODO change this to a listener...
+        robot_joints_state = None
         for robot_id in self.robotMap.values():
             try:
                 robot_joints_state = self.client_get_robot_joints_state(str(robot_id))
@@ -142,9 +143,9 @@ class FlexPlanningROS(object):
         # milestones.append(list(goalposjoint))
         
 
-        traj = trajectory.Trajectory(milestones=milestones)
-        traj_timed = trajectory.path_to_trajectory(traj,vmax=2,amax=4)
-        traj = traj_timed
+        # traj = trajectory.Trajectory(milestones=milestones)
+        # traj_timed = trajectory.path_to_trajectory(traj,vmax=2,amax=4)
+        # traj = traj_timed
         dt = 0.01  #approximately a 100Hz control loop
         # t0 = time.time()
         # while True:
@@ -161,15 +162,6 @@ class FlexPlanningROS(object):
         #     # 
         #     time.sleep(dt)
 
-
-        for entry in path:
-            jt_tmp = JointTrajectoryPoint(positions=list(entry), velocities=[0,0,0,0,0,0,0])
-            self.pub_traj.publish(jt_tmp)
-            time.sleep(dt)
-        
-        jt_tmp = JointTrajectoryPoint(positions=list(goalposjoint), velocities=[0,0,0,0,0,0,0])
-        self.pub_traj.publish(jt_tmp)
-
         jt = JointTrajectory()
         jt.header.stamp = rospy.Time.now()
         jt.header.frame_id = "world" # TODO?
@@ -180,9 +172,52 @@ class FlexPlanningROS(object):
             jt.joint_names.append(str(j))
 
         jt.points = []
-        for entry in path:
-            # jt.points.append(JointTrajectoryPoint(positions=joints_pos, velocities=[0]*num_involved_joints, time_from_start=rospy.Duration(0.0)))
-            jt.points.append(JointTrajectoryPoint(positions=entry, velocities=[0]*num_involved_joints)) # TODO time_from_start
+
+        # lastCommand = np.array([0]*num_involved_joints) # TODO change to current
+        lastCommand = np.array(robot_joints_state)
+        maxVelRad = 0.01 # adjust
+        for x in range(len(path)):
+            # Do indirect limiting of velocity
+            while True:
+                scaling = 1
+                errorT = np.array(path[x]) - lastCommand
+                jointDistance = np.linalg.norm(errorT)
+                jointDistPerPeriodStep = maxVelRad * dt
+                if jointDistance > jointDistPerPeriodStep:
+                    scaling = (jointDistPerPeriodStep/jointDistance)
+                lastCommand = lastCommand + scaling * errorT
+
+                if np.linalg.norm(np.array(path[x]) - lastCommand) <= 0.001: # todo adjust this
+                    lastCommand = np.array(path[x])
+                    
+                    jt_tmp = JointTrajectoryPoint(positions=list(lastCommand), velocities=[0]*num_involved_joints)
+                    self.pub_traj.publish(jt_tmp)
+
+                    jt.points.append(jt_tmp)
+
+                    time.sleep(dt)
+
+                    break
+                else:
+                    jt_tmp = JointTrajectoryPoint(positions=list(lastCommand), velocities=[0]*num_involved_joints)
+                    self.pub_traj.publish(jt_tmp)
+
+                    jt.points.append(jt_tmp)
+
+                    time.sleep(dt)
+
+
+        # for entry in path:
+        #     jt_tmp = JointTrajectoryPoint(positions=list(entry), velocities=[0,0,0,0,0,0,0])
+        #     self.pub_traj.publish(jt_tmp)
+        #     time.sleep(dt)
+        # jt_tmp = JointTrajectoryPoint(positions=list(goalposjoint), velocities=[0,0,0,0,0,0,0])
+        # self.pub_traj.publish(jt_tmp)
+
+        
+        # for entry in path:
+        #     # jt.points.append(JointTrajectoryPoint(positions=joints_pos, velocities=[0]*num_involved_joints, time_from_start=rospy.Duration(0.0)))
+        #     jt.points.append(JointTrajectoryPoint(positions=entry, velocities=[0]*num_involved_joints)) # TODO time_from_start
             
         return jt
 

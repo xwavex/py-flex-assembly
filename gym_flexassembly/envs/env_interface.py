@@ -37,34 +37,18 @@ from gym_flexassembly.constraints import frame_manager
 
 from gym_flexassembly.smartobjects import camera
 
-from sensor_msgs.msg import JointState
-from geometry_msgs.msg import Pose
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Quaternion
-from geometry_msgs.msg import PoseWithCovariance
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-
-# Msgs
-from cosima_world_state.msg import ObjectOfInterest, ObjectOfInterestArray
-# Srvs
-from cosima_world_state.srv import RequestTrajectory, RequestTrajectoryResponse
-from cosima_world_state.srv import RequestObjectsOfInterest, RequestObjectsOfInterestResponse
-from cosima_world_state.srv import RequestJointState, RequestJointStateResponse
-
 class EnvInterface(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50}
 
-    def __init__(self, gui=True, ros_frame_broadcaster=None, direct=False, use_real_interface=True, hz=250.0, stepping=False, static=False):
+    def __init__(self, gui=True, ros_frame_broadcaster=None, direct=False, use_real_interface=True, hz=250.0):
         ''' Initialize the base class for the environments.
             >>> Using use_real_interface the ros interfaces are exposed that the real system will utilize.
         '''
-        self._stepping = stepping
         self._use_real_interface = use_real_interface
         self._robot_map = {}
         self._camera_map = {}
         self._cameras = {}
         self._node_name = "env"
-        self._static = static
 
         # self._hz = 1000.0
         self._hz = hz
@@ -127,8 +111,6 @@ class EnvInterface(gym.Env):
 
         # Managers are still WIP!
         self.setup_manager()
-
-        self.set_running(self._stepping)
 
     def env_observation(self):
         ''' Provide the observation of the scenario.
@@ -220,7 +202,19 @@ class EnvInterface(gym.Env):
         '''
         try:
             import rospy
+            from sensor_msgs.msg import JointState
+            from geometry_msgs.msg import Pose
+            from geometry_msgs.msg import Point
+            from geometry_msgs.msg import Quaternion
+            from geometry_msgs.msg import PoseWithCovariance
+            from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
+            # Msgs
+            from cosima_world_state.msg import ObjectOfInterest, ObjectOfInterestArray
+            # Srvs
+            from cosima_world_state.srv import RequestTrajectory, RequestTrajectoryResponse
+            from cosima_world_state.srv import RequestObjectsOfInterest, RequestObjectsOfInterestResponse
+            from cosima_world_state.srv import RequestJointState, RequestJointStateResponse
 
             # Setup a service to retrieve the objects i.e. clamp poses.
             self.service_get_object_poses = rospy.Service(str(self._node_name)+'/get_object_poses', RequestObjectsOfInterest, self.service_get_object_poses_func)
@@ -235,7 +229,6 @@ class EnvInterface(gym.Env):
     def service_get_object_poses_func(self, req):
         ''' Service to retrieve the objects i.e. clamp poses.
         '''
-        from cosima_world_state.srv import RequestObjectsOfInterest, RequestObjectsOfInterestResponse
         ret = RequestObjectsOfInterestResponse()
         # Is it possible to do cuncurrency in pybullet?
         for body in get_bodies():

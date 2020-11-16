@@ -32,7 +32,8 @@ class Camera:
 
         self._start_time = perf_counter()
 
-        self._wait_frame_rate = 1.0 / self._settings['framerate']
+        # self._wait_frame_rate = 1.0 / self._settings['framerate']
+        self._wait_frame_rate = 1.0 / 5.0
 
         self._view_matrix = self._p.computeViewMatrix(self._settings['pos'],
                                                     self._settings['target_pos'],
@@ -66,9 +67,9 @@ class Camera:
 
                 self._rate = rospy.Rate(self._settings['framerate'])
 
-                print("\n\t> Initialized camera " + str(self._name) + " depth image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/depth/image_raw publisher\n")
+                print("\n\t> Initialized camera " + str(self._name) + " depth image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/depth/image_raw\n")
 
-                print("\n\t> Initialized camera " + str(self._name) + " color image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/color/image_raw publisher\n")
+                print("\n\t> Initialized camera " + str(self._name) + " color image \n\t(sensor_msgs.Image) on ~camera/"+str(self._name)+"/color/image_raw\n")
 
                 def thread_func():
                     while not self._terminate_thread:

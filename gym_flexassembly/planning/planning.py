@@ -65,8 +65,6 @@ class FlexPlanning(object):
 
         # Get the joint-space configuration for the desired goal position
         goalJntPos = p.calculateInverseKinematics(self._robot, 6, goalPosition, goalOrientation, self.ll, self.ul, self.jr, self.rp, maxNumIterations=5)
-
-        print("GOAL POS: " + str(goalJntPos))
  
         # Plan the a coolision-free path
         path = planning.plan_joint_motion(self._robot, jt.get_movable_joints(self._robot)[0:7], goalJntPos[0:7], obstacles=self._obstacles, attachments=attachments)
@@ -76,7 +74,7 @@ class FlexPlanning(object):
         else:
             print("\nA motion plan is found!\n")
 
-        return path, goalJntPos[0:7]
+        return path
 
     def getInvolvedRobotJoints(self):
         return jt.get_movable_joints(self._robot)[0:7]

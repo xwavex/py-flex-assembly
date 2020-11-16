@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-""" MAIN: Environment for the clamp assembly scenario.
+"""TODO.
 :Author:
   `Dennis Leroy Wigand <dwigand@cor-lab.de>`
 """
@@ -13,7 +13,6 @@ import math
 import numpy as np
 import random
 import time
-import sys
 
 # PYBULLET IMPORTS
 import pybullet as p
@@ -33,7 +32,6 @@ from gym_flexassembly import data as flexassembly_data
 # FLEX ASSEMBLY ROBOT IMPORTS
 from gym_flexassembly.robots.kuka_iiwa import KukaIIWA, KukaIIWA7, KukaIIWA14
 from gym_flexassembly.robots.kuka_iiwa_egp_40 import KukaIIWA_EGP40, KukaIIWA7_EGP40
-from gym_flexassembly.robots.prismatic_2_finger_gripper_plugin import Prismatic2FingerGripperPlugin
 
 # FLEX ASSEMBLY SMARTOBJECTS IMPORTS
 from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
@@ -41,16 +39,16 @@ from gym_flexassembly.smartobjects.spring_clamp import SpringClamp
 from gym_flexassembly.envs.env_interface import EnvInterface
 
 class FlexAssemblyEnv(EnvInterface):
-    metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50} # TODO do we need this?)
+    metadata = {'render.modes': ['human', 'rgb_array'], 'video.frames_per_second': 50} # TODO do we need this?
 
     def __init__(self,
                stepping=True,
                gui=True,
                direct=False,
-               use_real_interface=True,
-               static=False):
-        super().__init__(gui, direct, use_real_interface=use_real_interface, hz=1000.0, stepping=stepping, static=static)
+               use_real_interface=True):
+        super().__init__(gui, direct, use_real_interface=use_real_interface, hz=1000.0)
 
+        self._stepping = stepping
         self._urdfRoot_pybullet = pybullet_data.getDataPath()
         self._urdfRoot_flexassembly = flexassembly_data.getDataPath()
         # self._observation = []
@@ -69,12 +67,13 @@ class FlexAssemblyEnv(EnvInterface):
                                     'fov': 65,
                                     'near': 0.16,
                                     'far': 10,
-                                    'framerate': 5,
+                                    'framerate': 30,
                                     'up': [0, -1.0, 0]}
 
         self.env_reset()
-        if not static:
-            self.env_loop() # TODO
+
+        self.set_running(True) # TODO
+        self.env_loop() # TODO
 
     def loadEnvironment(self):
         # print("pybullet_data.getDataPath() = " + str(pybullet_data.getDataPath()))
@@ -137,16 +136,11 @@ class FlexAssemblyEnv(EnvInterface):
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 0)
 
         self.kuka7_1 = KukaIIWA7_EGP40(pos=[0,-0.2,0.5], orn=[0,0,0,1])
-        # self.kuka7_1 = KukaIIWA7(pos=[0,-0.2,0.5], orn=[0,0,0,1])
 
         # Enable rendering again
         self._p.configureDebugVisualizer(self._p.COV_ENABLE_RENDERING, 1)
         # Store name with as unique identified + "_0" and the id
         self._robot_map[str(self._p.getBodyInfo(self.kuka7_1.getUUid())[1].decode()) + "_0"] = self.kuka7_1.getUUid()
-
-        # # Load gripper
-        self.kuka7_1_egp = None
-        self.kuka7_1_egp = Prismatic2FingerGripperPlugin(self.kuka7_1.getUUid(), "gripper1", "SchunkEGP40_Finger1_joint", "SchunkEGP40_Finger2_joint", use_real_interface=self._use_real_interface)
 
     def loadCameras(self):
         if not self._use_real_interface:
@@ -155,10 +149,6 @@ class FlexAssemblyEnv(EnvInterface):
         for k,v in self._camera_map.items():
             self.remove_camera(name=k)
             self.add_camera(settings=self.cam_global_settings, name=k, model_id=v)
-
-    def step_internal(self):
-        if self.kuka7_1_egp:
-            self.kuka7_1_egp.update()
 
     def reset_internal(self):
         self._p.setGravity(0, 0, -9.81)
@@ -251,15 +241,4 @@ class FlexAssemblyEnv(EnvInterface):
         _step = super().env_step
 
 if __name__ == "__main__":
-    tmp = ""
-    if len(sys.argv) == 2:
-        tmp = str(sys.argv[1])
-    elif len(sys.argv) > 2:
-        print("Invalid arguments!", file=sys.stderr)
-        print("Usage: python3 -m gym_flexassembly.planning.flex_planning_ros [extrigger]\n")
-        sys.exit(1)
-
-    if tmp == "extrigger":
-        inst = FlexAssemblyEnv(stepping=False)
-    else:
-        inst = FlexAssemblyEnv(stepping=True)
+    inst = FlexAssemblyEnv(stepping=False)

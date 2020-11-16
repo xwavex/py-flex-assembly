@@ -334,11 +334,11 @@ class KukaIIWA:
     #     return Jdot
 
 class KukaIIWA7(KukaIIWA):
-    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, pos=[0,0,0.07], orn=[0,0,0,1]):
-        KukaIIWA.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='7', pos=pos, orn=orn)
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
+        KukaIIWA.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='7')
 
 class KukaIIWA14(KukaIIWA):
-    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001, pos=[0,0,0.07], orn=[0,0,0,1]):
-        KukaIIWA.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='14', pos=pos, orn=orn)
+    def __init__(self, urdfRootPath=flexassembly_data.getDataPath(), timeStep=0.001):
+        KukaIIWA.__init__(self, urdfRootPath=urdfRootPath, timeStep=timeStep, variant='14')
 
 __all__ = ['KukaIIWA7', 'KukaIIWA14']

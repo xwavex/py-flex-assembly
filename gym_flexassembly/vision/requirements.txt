@@ -1,6 +1,6 @@
 numpy==1.19.0
 opencv-python==4.2.0.34
-Pillow==7.2.0
+Pillow==8.1.1
 pybullet==2.8.2
 rospkg==1.2.8
 scipy==1.5.2

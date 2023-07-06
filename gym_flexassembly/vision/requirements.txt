@@ -3,7 +3,7 @@ opencv-python==4.2.0.34
 Pillow==7.2.0
 pybullet==2.8.2
 rospkg==1.2.8
-scipy==1.5.2
+scipy==1.10.0
 torch==1.5.1
 torchvision==0.6.1
 empy==3.3.4
